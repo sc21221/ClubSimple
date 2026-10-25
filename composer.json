@@ -1,0 +1,23 @@
+{
+    "name": "clubmanager/clubmanager",
+    "description": "Pure PHP Club Management System for Musikverein Denkendorf",
+    "type": "project",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Reinhard Schiessl"
+        }
+    ],
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Clubmanager\\": "src/",
+            "Clubmanager\\Database\\": "database/"
+        },
+        "files": [
+            "src/Core/Helpers.php"
+        ]
+    }
+}
