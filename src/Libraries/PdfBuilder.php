@@ -274,7 +274,7 @@ class PdfBuilder
         $totalObjs = $this->n - 1;
         $this->buffer .= "xref\n0 " . ($totalObjs + 1) . "\n0000000000 65535 f \n";
         for ($i = 1; $i <= $totalObjs; $i++) {
-            $this->buffer .= sprintf("%010d 00000 n \n", $this->offsets[$i]);
+            $this->buffer .= sprintf("%010d 00000 n \n", $this->offsets[$i] ?? null);
         }
 
         // Trailer
