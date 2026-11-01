@@ -51,6 +51,11 @@ use Clubmanager\Models\User;
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/departments') ? 'active' : '' ?>" href="/departments">
+                            <i class="bi bi-diagram-3 me-1"></i> <?= __('nav_departments') ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/fee-classes') ? 'active' : '' ?>" href="/fee-classes">
                             <i class="bi bi-tags me-1"></i> <?= __('nav_fee_classes') ?>
                         </a>

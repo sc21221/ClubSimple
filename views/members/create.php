@@ -76,7 +76,7 @@
                         </div>
                         <div class="col-md-4">
                             <label for="zip" class="form-label small fw-semibold"><?= __('field_zip') ?></label>
-                            <input type="text" class="form-control" id="zip" name="zip" value="73770">
+                            <input type="text" class="form-control" id="zip" name="zip" value="85095">
                         </div>
                         <div class="col-md-5">
                             <label for="city" class="form-label small fw-semibold"><?= __('field_city') ?></label>

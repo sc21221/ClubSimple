@@ -21,6 +21,7 @@
     <li class="nav-item" role="presentation"><button class="nav-link" id="membership-tab" data-bs-toggle="tab" data-bs-target="#membership" type="button" role="tab" aria-controls="membership" aria-selected="false"><?= __('member_tab_membership') ?></button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab" aria-controls="bank" aria-selected="false"><?= __('member_tab_bank') ?></button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees" type="button" role="tab" aria-controls="fees" aria-selected="false"><?= __('assigned_fees') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="departments-tab" data-bs-toggle="tab" data-bs-target="#departments" type="button" role="tab" aria-controls="departments" aria-selected="false"><?= __('nav_departments') ?></button></li>
 </ul>
 
 <div class="tab-content">
@@ -226,6 +227,69 @@
     </div>
 </div>
 </div>
+
+<div class="tab-pane fade" id="departments" role="tabpanel" aria-labelledby="departments-tab" tabindex="0">
+    <div class="card shadow-sm border-0">
+        <div class="card-header card-header-custom py-3">
+            <span class="fw-bold"><i class="bi bi-diagram-3 text-primary me-2"></i> <?= __('department_assignments') ?></span>
+        </div>
+        <div class="card-body">
+            <?php if (empty($assignedDepartments)): ?>
+                <p class="text-muted"><?= __('department_no_assignments') ?></p>
+            <?php else: ?>
+                <div class="table-responsive mb-4">
+                    <table class="table align-middle">
+                        <thead><tr><th><?= __('department_name') ?></th><th><?= __('department_assigned_date') ?></th><th><?= __('department_description') ?></th><th class="text-end"><?= __('actions') ?></th></tr></thead>
+                        <tbody>
+                        <?php foreach ($assignedDepartments as $assignment): ?>
+                            <tr>
+                                <td><?= e($assignment->name) ?></td>
+                                <td><?= e($assignment->assigned_date ?? '') ?></td>
+                                <td><?= e($assignment->description ?? '') ?></td>
+                                <td class="text-end">
+                                    <form action="/members/<?= (int) $member->id ?>/departments/<?= (int) $assignment->id ?>/delete" method="POST" onsubmit="return confirm(<?= e(json_encode(__('department_confirm_remove'), JSON_HEX_APOS | JSON_HEX_QUOT)) ?>);">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"><?= __('delete') ?></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+            <?php
+            $assignedDepartmentIds = array_map(static fn($assignment) => (int) $assignment->department_id, $assignedDepartments ?? []);
+            $availableDepartments = array_filter($departments ?? [], static fn($department) => !in_array((int) $department->id, $assignedDepartmentIds, true));
+            ?>
+            <?php if ($availableDepartments): ?>
+                <form action="/members/<?= (int) $member->id ?>/departments" method="POST" class="row g-3 align-items-end">
+                    <?= csrf_field() ?>
+                    <div class="col-md-4">
+                        <label for="department_id" class="form-label small fw-semibold"><?= __('nav_departments') ?> *</label>
+                        <select class="form-select" id="department_id" name="department_id" required>
+                            <option value=""><?= __('department_select') ?></option>
+                            <?php foreach ($availableDepartments as $availableDepartment): ?>
+                                <option value="<?= (int) $availableDepartment->id ?>"><?= e($availableDepartment->name) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="assigned_date" class="form-label small fw-semibold"><?= __('department_assigned_date') ?></label>
+                        <input type="date" class="form-control" id="assigned_date" name="assigned_date">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="department_description" class="form-label small fw-semibold"><?= __('department_description') ?></label>
+                        <input type="text" class="form-control" id="department_description" name="description">
+                    </div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-primary"><?= __('department_assign') ?></button></div>
+                </form>
+            <?php else: ?>
+                <p class="text-muted mb-0"><?= __('department_no_available') ?></p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 </div>
 
 <script>
@@ -233,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const actions = document.getElementById('member-edit-actions');
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', () => {
-            actions.hidden = tab.id === 'fees-tab';
+            actions.hidden = tab.id === 'fees-tab' || tab.id === 'departments-tab';
         });
     });
     document.getElementById('member-edit-form').addEventListener('invalid', event => {

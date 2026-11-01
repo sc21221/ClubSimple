@@ -218,6 +218,8 @@ class MemberController extends Controller
             'member' => $member,
             'feeClasses' => $feeClasses,
             'assignedFees' => $member->getActiveFeeClasses(),
+            'departments' => (new \Clubmanager\Repositories\DepartmentRepository())->getAll(),
+            'assignedDepartments' => (new \Clubmanager\Repositories\DepartmentRepository())->getForMember((int) $member->id),
         ]);
     }
 

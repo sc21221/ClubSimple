@@ -139,9 +139,20 @@ $router->post('/members/{id}/delete', [\Clubmanager\Controllers\MemberController
 $router->post('/members/{id}/fee', [\Clubmanager\Controllers\MemberController::class, 'assignFeeClass'], ['auth']);
 $router->post('/members/{id}/fee/{assignmentId}/update', [\Clubmanager\Controllers\MemberController::class, 'updateFeeClass'], ['auth']);
 $router->post('/members/{id}/fee/{assignmentId}/delete', [\Clubmanager\Controllers\MemberController::class, 'removeFeeClass'], ['auth']);
+$router->post('/members/{id}/departments', [\Clubmanager\Controllers\DepartmentController::class, 'assign'], ['auth']);
+$router->post('/members/{id}/departments/{assignmentId}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'remove'], ['auth']);
 $router->get('/members/{id}/export/json', [\Clubmanager\Controllers\MemberController::class, 'exportGdprJson'], ['auth']);
 $router->get('/members/{id}/export/pdf', [\Clubmanager\Controllers\MemberController::class, 'exportGdprPdf'], ['auth']);
 $router->post('/members/{id}/anonymize', [\Clubmanager\Controllers\MemberController::class, 'anonymize'], ['auth']);
+
+// Departments
+$router->get('/departments', [\Clubmanager\Controllers\DepartmentController::class, 'index'], ['auth']);
+$router->get('/departments/create', [\Clubmanager\Controllers\DepartmentController::class, 'create'], ['auth']);
+$router->post('/departments', [\Clubmanager\Controllers\DepartmentController::class, 'store'], ['auth']);
+$router->get('/departments/{id}/edit', [\Clubmanager\Controllers\DepartmentController::class, 'edit'], ['auth']);
+$router->post('/departments/{id}/update', [\Clubmanager\Controllers\DepartmentController::class, 'update'], ['auth']);
+$router->post('/departments/{id}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'delete'], ['auth']);
+$router->get('/departments/{id}/members', [\Clubmanager\Controllers\DepartmentController::class, 'show'], ['auth']);
 
 // Fee Classes
 $router->get('/fee-classes', [\Clubmanager\Controllers\FeeClassController::class, 'index'], ['auth']);

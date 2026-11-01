@@ -107,6 +107,13 @@ Webbasierte Vereinsverwaltungssoftware **"Clubmanager"** für den **Musikverein 
 - SEPA-Gläubigerdaten: Gläubiger-Identifikationsnummer (`bank_creditor_id`), Vereins-IBAN (`bank_iban`), BIC (`bank_bic`) und Kreditinstitut.
 - Das Kreditinstitut des Vereins darf bis zu 100 Zeichen lang sein. Bei bestehenden MySQL-/MariaDB-Datenbanken nach einer Sicherung `database/migrate_club_bank_name.sql` einmal auf der richtigen Datenbank ausführen; `schema.sql` ändert bestehende Tabellen nicht. SQLite erzwingt die deklarierte `VARCHAR`-Länge nicht und benötigt hierfür keine Migration.
 
+### 2.10 Abteilungen (Datenbankschema)
+- Unter „Abteilungen“ können Abteilungen angelegt, umbenannt und gelöscht sowie ihre Mitglieder angezeigt werden. Zugeordnete Abteilungen können erst nach dem Entfernen ihrer Zuordnungen gelöscht werden.
+- Im Tab „Abteilungen“ beim Bearbeiten eines Mitglieds lassen sich Abteilungen mit optionalem Datum und Beschreibung zuordnen und wieder entfernen. Jede Abteilung kann einem Mitglied einmal zugeordnet werden.
+- `departments`: `id` (automatisch erzeugter Primärschlüssel), `name` (`VARCHAR(100)`, Pflichtfeld).
+- `member_departments`: `id` (automatisch erzeugter Primärschlüssel), `member_id` und `department_id` (Pflichtfelder und Fremdschlüssel), `assigned_date` (`DATE`, optional), `description` (`TEXT`, optional). Das Paar `member_id`/`department_id` ist eindeutig; beim Löschen eines Mitglieds oder einer Abteilung werden dessen Zuordnungen gelöscht.
+- Für bestehende Datenbanken nach einer Sicherung `database/migrate_departments.sql` für MariaDB/MySQL bzw. `database/migrate_departments_sqlite.sql` für SQLite auf der richtigen Datenbank ausführen. Bei SQLite müssen Fremdschlüssel pro Verbindung mit `PRAGMA foreign_keys = ON` aktiviert sein; die Anwendung aktiviert sie beim Verbindungsaufbau. Die Migrationen erstellen fehlende Tabellen, ändern aber keine bereits vorhandenen Tabellen gleichen Namens.
+
 ---
 
 ## 3. Verzeichnisstruktur
