@@ -58,13 +58,14 @@ class ClubController extends Controller
 
         $validator = Validator::make($data, [
             'name' => 'required|max:100',
+            'bank_name' => 'max:100',
             'bank_creditor_id' => 'required|max:32',
             'bank_iban' => 'required|iban',
             'bank_bic' => 'required|bic',
         ]);
 
         if ($validator->fails()) {
-            $this->flash('danger', $validator->first('name') ?: __('validation_error'));
+            $this->flash('danger', $validator->first('name') ?: $validator->first('bank_name') ?: __('validation_error'));
             $this->redirect('/club');
             return;
         }

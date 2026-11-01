@@ -1,0 +1,1 @@
+ALTER TABLE `clubs` MODIFY COLUMN `bank_name` VARCHAR(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL;

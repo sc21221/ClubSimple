@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `clubs` (
   `country` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `bank_name` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bank_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `bank_creditor_id` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
   `bank_bic` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
   `bank_iban` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,

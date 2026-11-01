@@ -1,3 +1,4 @@
+<?php /** @var \Clubmanager\Models\FeeClass[] $feeClasses */ ?>
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h2 class="h3 fw-bold mb-1"><?= __('members_create') ?></h2>
@@ -161,11 +162,11 @@
                         </div>
                         <div class="col-md-6">
                             <label for="bank_name" class="form-label small fw-semibold"><?= __('field_bank_name') ?></label>
-                            <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="z.B. Kreissparkasse Esslingen">
+                            <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="z.B. Raiffeisenbank Bayern Mitte">
                         </div>
                         <div class="col-md-6">
                             <label for="bank_bic" class="form-label small fw-semibold"><?= __('field_bank_bic') ?></label>
-                            <input type="text" class="form-control" id="bank_bic" name="bank_bic" placeholder="z.B. ESSLDE66XXX">
+                            <input type="text" class="form-control" id="bank_bic" name="bank_bic" placeholder="z.B. BYLADEMxxx">
                         </div>
                         <div class="col-12">
                             <label for="bank_iban" class="form-label small fw-semibold"><?= __('field_bank_iban') ?></label>

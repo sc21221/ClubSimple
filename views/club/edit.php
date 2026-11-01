@@ -1,3 +1,4 @@
+<?php /** @var \Clubmanager\Models\Club $club */ ?>
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h2 class="h3 fw-bold mb-1"><?= __('club_title') ?></h2>
@@ -68,7 +69,7 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label for="bank_name" class="form-label small fw-semibold"><?= __('field_bank_name') ?></label>
-                            <input type="text" class="form-control" id="bank_name" name="bank_name" value="<?= e($club->bank_name) ?>" placeholder="z.B. Kreissparkasse Esslingen">
+                            <input type="text" class="form-control" id="bank_name" name="bank_name" maxlength="100" value="<?= e($club->bank_name) ?>" placeholder="z.B. Raiffeisenbank Bayern Mitte">
                         </div>
                         <div class="col-12">
                             <label for="bank_creditor_id" class="form-label small fw-semibold"><?= __('field_club_creditor_id') ?> *</label>
@@ -81,7 +82,7 @@
                         </div>
                         <div class="col-12">
                             <label for="bank_bic" class="form-label small fw-semibold"><?= __('field_bank_bic') ?> *</label>
-                            <input type="text" class="form-control font-monospace" id="bank_bic" name="bank_bic" value="<?= e($club->bank_bic) ?>" required placeholder="ESSLDE66XXX">
+                            <input type="text" class="form-control font-monospace" id="bank_bic" name="bank_bic" value="<?= e($club->bank_bic) ?>" required placeholder="BYLADEMxxx">
                         </div>
                     </div>
 

@@ -60,7 +60,7 @@ class DatabaseInitializer
               `country` VARCHAR(20) DEFAULT NULL,
               `email` VARCHAR(80) DEFAULT NULL,
               `phone` VARCHAR(20) DEFAULT NULL,
-              `bank_name` VARCHAR(30) DEFAULT NULL,
+              `bank_name` VARCHAR(100) DEFAULT NULL,
               `bank_creditor_id` VARCHAR(32) NOT NULL,
               `bank_bic` VARCHAR(32) NOT NULL,
               `bank_iban` VARCHAR(32) NOT NULL,
@@ -226,7 +226,7 @@ class DatabaseInitializer
             '+49 8466 ',
             'Raiba Ingolstadt',
             'DE98ZZZ09999999999',
-            'ESSLDE66XXX',
+            'BYLADEMxxx',
             'DE02611500200000123456',
         ]);
 
@@ -274,42 +274,42 @@ class DatabaseInitializer
                 'Herr', 'Männlich', 'Lukas', 'Bauer', 'lukas.bauer@example.de', '+49 171 1122334',
                 'Vollmitglied', 'Aktiv', 0, 'Albstraße 5', '73770', 'Denkendorf',
                 '2018-04-01', date('Y-m-d', strtotime('-18 years -1 month')),
-                'Kreissparkasse Esslingen', 'ESSLDE66XXX', 'DE21611500200000000101', 'Lukas Bauer',
+                'Raiba Bayern MItte', 'ESSLDE66XXX', 'DE21611500200000000101', 'Lukas Bauer',
             ],
             // 2. Child member (Jugend)
             [
                 'Herr', 'Männlich', 'Felix', 'Müller', 'eltern.mueller@example.de', '+49 711 987654',
                 'Jugendmitglied', 'Aktiv', 0, 'Brunnenweg 3', '73770', 'Denkendorf',
                 '2021-09-01', date('Y-m-d', strtotime('-12 years -2 months')),
-                'Volksbank Mittlerer Neckar', 'GENODE61VBM', 'DE44611600760000000202', 'Martin Müller',
+                'Sparkasse Eichstätt', 'GENODE61VBM', 'DE44611600760000000202', 'Martin Müller',
             ],
             // 3. Active Adult Musician (turning 50 soon - milestone birthday!)
             [
                 'Frau', 'Weiblich', 'Sabine', 'Wagner', 'sabine.wagner@example.de', '+49 172 3344556',
                 'Vollmitglied', 'Aktiv', 0, 'Kirchstraße 14', '73770', 'Denkendorf',
                 '2000-01-15', date('Y', strtotime('-50 years')) . '-' . date('m', strtotime('+20 days')) . '-' . date('d', strtotime('+20 days')),
-                'Kreissparkasse Esslingen', 'ESSLDE66XXX', 'DE68611500200000000303', 'Sabine Wagner',
+                'Raiba Bayern MItte', 'ESSLDE66XXX', 'DE68611500200000000303', 'Sabine Wagner',
             ],
             // 4. Senior Musician (25-year club anniversary milestone!)
             [
                 'Herr', 'Männlich', 'Hans', 'Schneider', 'hans.schneider@example.de', '+49 711 341234',
                 'Vollmitglied', 'Aktiv', 0, 'Kelterweg 8', '73770', 'Denkendorf',
                 date('Y', strtotime('-25 years')) . '-05-10', '1955-08-14',
-                'BW-Bank Stuttgart', 'SOLADEST600', 'DE89600501010000000404', 'Hans Schneider',
+                'Audi-Bank Ingolstadt', 'SOLADEST600', 'DE89600501010000000404', 'Hans Schneider',
             ],
             // 5. Supporting Member (Fördermitglied, turning 70 milestone birthday!)
             [
                 'Herr', 'Männlich', 'Wilhelm', 'Fischer', 'wilhelm.fischer@example.de', '+49 711 345099',
                 'Fördermitglied', 'Aktiv', 0, 'Rosenweg 2', '73770', 'Denkendorf',
                 '1985-03-20', date('Y', strtotime('-70 years')) . '-' . date('m', strtotime('+35 days')) . '-' . date('d', strtotime('+35 days')),
-                'Kreissparkasse Esslingen', 'ESSLDE66XXX', 'DE12611500200000000505', 'Wilhelm Fischer',
+                'Raiba Bayern MItte', 'ESSLDE66XXX', 'DE12611500200000000505', 'Wilhelm Fischer',
             ],
             // 6. Honorary Member (Ehrenmitglied, 50 years membership milestone!)
             [
                 'Herr', 'Männlich', 'Ernst', 'Zimmermann', 'ernst.zimmermann@example.de', '+49 711 342211',
                 'Ehrenmitglied', 'Aktiv', 0, 'Schlossplatz 4', '73770', 'Denkendorf',
                 date('Y', strtotime('-50 years')) . '-06-01', '1942-03-12',
-                'Kreissparkasse Esslingen', 'ESSLDE66XXX', 'DE35611500200000000606', 'Ernst Zimmermann',
+                'Raiba Bayern MItte', 'ESSLDE66XXX', 'DE35611500200000000606', 'Ernst Zimmermann',
             ],
             // 7. Member with Invoice Marker (no direct debit)
             [
@@ -323,7 +323,7 @@ class DatabaseInitializer
                 'Herr', 'Männlich', 'Thomas', 'Braun', 'thomas.braun@example.de', '+49 176 8899001',
                 'Vollmitglied', 'Inaktiv', 0, 'Goethestraße 21', '73770', 'Denkendorf',
                 '2010-01-01', '1990-12-15',
-                'Kreissparkasse Esslingen', 'ESSLDE66XXX', 'DE79611500200000000808', 'Thomas Braun',
+                'Raiba Bayern MItte', 'ESSLDE66XXX', 'DE79611500200000000808', 'Thomas Braun',
             ],
         ];
 

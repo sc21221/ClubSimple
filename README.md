@@ -105,6 +105,7 @@ Webbasierte Vereinsverwaltungssoftware **"Clubmanager"** für den **Musikverein 
 ### 2.9 Vereinsstammdaten (`clubs` Tabelle)
 - Verwaltung der Vereinsdaten: Name, Untertitel, 1. Vorsitzender (`boss`), Anschrift, Kontaktdaten.
 - SEPA-Gläubigerdaten: Gläubiger-Identifikationsnummer (`bank_creditor_id`), Vereins-IBAN (`bank_iban`), BIC (`bank_bic`) und Kreditinstitut.
+- Das Kreditinstitut des Vereins darf bis zu 100 Zeichen lang sein. Bei bestehenden MySQL-/MariaDB-Datenbanken nach einer Sicherung `database/migrate_club_bank_name.sql` einmal auf der richtigen Datenbank ausführen; `schema.sql` ändert bestehende Tabellen nicht. SQLite erzwingt die deklarierte `VARCHAR`-Länge nicht und benötigt hierfür keine Migration.
 
 ---
 

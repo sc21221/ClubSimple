@@ -31,18 +31,18 @@ class ClubRepository
 
             // Create default instance for Musikverein Denkendorf
             $club = new Club([
-                'name' => 'Musikverein Denkendorf e.V.',
-                'name2' => 'Blasmusik & Jugendarbeit',
-                'boss' => 'Reinhard Schiessl',
-                'street' => 'Hauptstraße 1',
-                'zip' => '73770',
+                'name' => 'Musikverein Denkendorf',
+                'name2' => '',
+                'boss' => 'Michael Rill',
+                'street' => 'Schmiedstrasse 1',
+                'zip' => '85095',
                 'city' => 'Denkendorf',
                 'country' => 'Deutschland',
                 'email' => 'vorstand@musikverein-denkendorf.de',
-                'phone' => '+49 711 345678',
-                'bank_name' => 'Kreissparkasse Esslingen-Nürtingen',
+                'phone' => '+49 8466 1234567',
+                'bank_name' => 'Raiffeisenbank Bayern Mitte',
                 'bank_creditor_id' => 'DE98ZZZ09999999999',
-                'bank_bic' => 'ESSLDE66XXX',
+                'bank_bic' => 'BYLADEM',
                 'bank_iban' => 'DE02611500200000123456',
             ]);
             $club->save();
