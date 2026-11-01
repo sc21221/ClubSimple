@@ -17,7 +17,7 @@ namespace Clubmanager\Libraries;
 class PdfBuilder
 {
     protected int $page = 0;
-    protected int $n = 2;
+    protected int $n = 1;
     protected array $offsets = [];
     protected string $buffer = '';
     protected array $pages = [];
@@ -218,6 +218,8 @@ class PdfBuilder
 
     protected function buildPdf(): void
     {
+        $this->n = 1;
+        $this->offsets = [];
         $this->buffer = "%PDF-1.4\n";
 
         // Object 1: Catalog
@@ -234,18 +236,16 @@ class PdfBuilder
         $this->buffer .= sprintf("<< /Type /Pages /Kids [ %s] /Count %d /MediaBox [ 0 0 %.2F %.2F ] >>\nendobj\n", $kids, $this->page, $this->w * $k, $this->h * $k);
 
         // Page objects
-        $contentObjIds = [];
-        $nextObjId = 2 + $this->page + 1;
+        $fontObjId = 3 + 2 * $this->page;
 
         for ($i = 1; $i <= $this->page; $i++) {
-            $contentId = $nextObjId++;
-            $contentObjIds[$i] = $contentId;
+            $contentId = 2 + $this->page + $i;
             $this->newObj();
             $this->buffer .= sprintf(
                 "<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 %d 0 R /F2 %d 0 R /F3 %d 0 R >> /ProcSet [ /PDF /Text /ImageC ] >> /Contents %d 0 R >>\nendobj\n",
-                $nextObjId,
-                $nextObjId + 1,
-                $nextObjId + 2,
+                $fontObjId,
+                $fontObjId + 1,
+                $fontObjId + 2,
                 $contentId
             );
         }
