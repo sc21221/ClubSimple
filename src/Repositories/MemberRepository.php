@@ -254,8 +254,14 @@ class MemberRepository
         $old = $member->toArray();
         $id = (int) $member->id;
 
-        // Clean up fee assignments
-        Database::execute("DELETE FROM `member_fee_classes` WHERE `member_id` = ?", [$id]);
+        $references = Database::fetchOne(
+            'SELECT EXISTS(SELECT 1 FROM `membership_fees` WHERE `member_id` = ?) AS has_fees,
+                    EXISTS(SELECT 1 FROM `member_fee_classes` WHERE `member_id` = ?) AS has_assignments',
+            [$id, $id]
+        );
+        if (!empty($references['has_fees']) || !empty($references['has_assignments'])) {
+            return false;
+        }
 
         $deleted = $member->delete();
         if ($deleted) {
