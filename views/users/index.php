@@ -1,3 +1,4 @@
+<?php /** @var \Clubmanager\Models\User|null $currentUser */ ?>
 <!-- User Management Header -->
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
     <div>
@@ -39,11 +40,7 @@
                             </td>
                             <td><?= e($u->email) ?></td>
                             <td>
-                                <?php if ($u->isAdmin()): ?>
-                                    <span class="badge bg-danger px-2 py-1"><?= __('role_admin') ?></span>
-                                <?php else: ?>
-                                    <span class="badge bg-primary px-2 py-1"><?= __('role_treasurer') ?></span>
-                                <?php endif; ?>
+                                <span class="badge <?= $u->isAdmin() ? 'bg-danger' : 'bg-primary' ?> px-2 py-1"><?= __('role_' . $u->getRole()) ?></span>
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border"><?= strtoupper($u->locale ?? 'de') ?></span>

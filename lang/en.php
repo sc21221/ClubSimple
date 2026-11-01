@@ -38,6 +38,9 @@ return [
     // Roles
     'role_admin' => 'Administrator',
     'role_treasurer' => 'Treasurer',
+    'role_secretary' => 'Secretary',
+    'role_board' => 'Board Member',
+    'role_conductor' => 'Conductor',
     'role_user' => 'Staff',
 
     // Auth
@@ -170,6 +173,13 @@ return [
     'fee_class_delete_blocked' => 'The fee class cannot be deleted because assignments or payment history exist.',
     'assigned_members_count' => 'Assigned Members',
     'assigned_fees' => 'Assigned Fee Classes',
+    'member_tab_personal' => 'Personal Details',
+    'member_tab_contact' => 'Address and Contact',
+    'member_tab_membership' => 'Club Membership',
+    'member_tab_bank' => 'Bank Details & SEPA Mandate',
+    'member_no_fee_classes' => 'This member has no assigned fee classes.',
+    'member_fee_save_separately' => 'Changes to fee classes are saved individually.',
+    'member_manage_fee_classes' => 'Assign or remove fee classes on the member profile',
     'assign_fee_class' => 'Assign Fee Class',
     'custom_amount' => 'Custom Amount (€)',
     'valid_from' => 'Valid From',

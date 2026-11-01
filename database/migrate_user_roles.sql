@@ -1,0 +1,2 @@
+ALTER TABLE `users` ADD COLUMN `role` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user';
+UPDATE `users` SET `role` = CASE WHEN `admin` = 1 THEN 'admin' WHEN `admin` = 0 THEN 'treasurer' ELSE 'user' END;

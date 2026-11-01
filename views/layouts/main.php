@@ -1,3 +1,10 @@
+<?php
+use Clubmanager\Models\User;
+
+/** @var string $currentLocale */
+/** @var User|null $currentUser */
+/** @var string|false $content */
+?>
 <!DOCTYPE html>
 <html lang="<?= e($currentLocale) ?>">
 <head>
@@ -107,8 +114,18 @@
                             <span><?= strtoupper($currentLocale) ?></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="langDropdown">
-                            <li><a class="dropdown-item <?= $currentLocale === 'de' ? 'active' : '' ?>" href="/auth/lang?lang=de">Deutsch (DE)</a></li>
-                            <li><a class="dropdown-item <?= $currentLocale === 'en' ? 'active' : '' ?>" href="/auth/lang?lang=en">English (EN)</a></li>
+                            <li>
+                                <form action="/auth/lang" method="POST">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" name="lang" value="de" class="dropdown-item <?= $currentLocale === 'de' ? 'active' : '' ?>">Deutsch (DE)</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="/auth/lang" method="POST">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" name="lang" value="en" class="dropdown-item <?= $currentLocale === 'en' ? 'active' : '' ?>">English (EN)</button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
 
@@ -125,7 +142,7 @@
                             <li class="px-3 py-2 text-muted small">
                                 <div><?= e($currentUser->email) ?></div>
                                 <span class="badge <?= $currentUser->isAdmin() ? 'bg-danger' : 'bg-primary' ?> mt-1">
-                                    <?= $currentUser->isAdmin() ? __('role_admin') : __('role_treasurer') ?>
+                                    <?= __('role_' . $currentUser->getRole()) ?>
                                 </span>
                             </li>
                             <li><hr class="dropdown-divider"></li>

@@ -1,4 +1,5 @@
 <?php /** @var \Clubmanager\Models\Member $member */ ?>
+<?php /** @var \Clubmanager\Models\FeeClass[] $feeClasses */ ?>
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h2 class="h3 fw-bold mb-1"><?= __('members_edit') ?>: <?= e($member->getFullName()) ?></h2>
@@ -14,12 +15,20 @@
     </div>
 </div>
 
-<form action="/members/<?= $member->id ?>" method="POST">
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation"><button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true"><?= __('member_tab_personal') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false"><?= __('member_tab_contact') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="membership-tab" data-bs-toggle="tab" data-bs-target="#membership" type="button" role="tab" aria-controls="membership" aria-selected="false"><?= __('member_tab_membership') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab" aria-controls="bank" aria-selected="false"><?= __('member_tab_bank') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees" type="button" role="tab" aria-controls="fees" aria-selected="false"><?= __('assigned_fees') ?></button></li>
+</ul>
+
+<div class="tab-content">
+<form action="/members/<?= $member->id ?>" method="POST" id="member-edit-form" class="tab-content">
     <?= csrf_field() ?>
 
-    <div class="row g-4">
         <!-- Section 1: Personal Data -->
-        <div class="col-lg-6">
+        <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab" tabindex="0">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header card-header-custom py-3">
                     <span class="fw-bold"><i class="bi bi-person me-2 text-primary"></i> 1. Persönliche Stammdaten</span>
@@ -63,7 +72,7 @@
         </div>
 
         <!-- Section 2: Contact & Address -->
-        <div class="col-lg-6">
+        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header card-header-custom py-3">
                     <span class="fw-bold"><i class="bi bi-geo-alt me-2 text-primary"></i> 2. Anschrift & Kontakt</span>
@@ -100,7 +109,7 @@
         </div>
 
         <!-- Section 3: Membership Status -->
-        <div class="col-lg-6">
+        <div class="tab-pane fade" id="membership" role="tabpanel" aria-labelledby="membership-tab" tabindex="0">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header card-header-custom py-3">
                     <span class="fw-bold"><i class="bi bi-card-checklist me-2 text-primary"></i> 3. Vereinszugehörigkeit</span>
@@ -146,7 +155,7 @@
         </div>
 
         <!-- Section 4: Bank & SEPA Direct Debit Mandate -->
-        <div class="col-lg-6">
+        <div class="tab-pane fade" id="bank" role="tabpanel" aria-labelledby="bank-tab" tabindex="0">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header card-header-custom py-3">
                     <span class="fw-bold"><i class="bi bi-bank me-2 text-primary"></i> 4. Bankverbindung & SEPA-Mandat</span>
@@ -175,11 +184,64 @@
         </div>
 
         <!-- Bottom Action Buttons -->
-        <div class="col-12 text-end">
+        <div class="text-end mt-4" id="member-edit-actions">
             <a href="/members/<?= $member->id ?>" class="btn btn-outline-secondary me-2"><?= __('cancel') ?></a>
             <button type="submit" class="btn btn-primary px-4 shadow-sm">
                 <i class="bi bi-check-lg me-1"></i> <?= __('save') ?>
             </button>
         </div>
-    </div>
 </form>
+
+<div class="tab-pane fade" id="fees" role="tabpanel" aria-labelledby="fees-tab" tabindex="0">
+<div class="card shadow-sm border-0">
+    <div class="card-header card-header-custom py-3">
+        <span class="fw-bold"><i class="bi bi-tags text-primary me-2"></i> <?= __('assigned_fees') ?></span>
+    </div>
+    <div class="card-body">
+        <?php if (empty($assignedFees)): ?>
+            <p class="text-muted"><?= __('member_no_fee_classes') ?></p>
+        <?php else: ?>
+            <p class="text-muted small"><?= __('member_fee_save_separately') ?></p>
+            <?php foreach ($assignedFees as $af): ?>
+                <form action="/members/<?= (int) $member->id ?>/fee/<?= (int) $af['id'] ?>/update" method="POST" class="row g-2 align-items-end mb-3">
+                    <?= csrf_field() ?>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold" for="fee_class_<?= (int) $af['id'] ?>"><?= __('field_fee_name') ?></label>
+                        <select class="form-select" id="fee_class_<?= (int) $af['id'] ?>" name="fee_class_id" required>
+                            <?php foreach ($feeClasses as $fc): ?>
+                                <option value="<?= (int) $fc->id ?>" <?= (int) $fc->id === (int) $af['fee_class_id'] ? 'selected' : '' ?>><?= e($fc->name) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-5 small text-muted">
+                        <?= __('valid_from') ?>: <?= e($af['start_date']) ?>
+                        <?php if ($af['end_date']): ?> &bull; <?= __('valid_until') ?>: <?= e($af['end_date']) ?><?php endif; ?>
+                        <?php if ($af['custom_amount'] !== null && $af['custom_amount'] !== ''): ?> &bull; <?= __('custom_amount') ?>: <?= format_money($af['custom_amount']) ?><?php endif; ?>
+                    </div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-outline-primary"><?= __('save') ?></button></div>
+                </form>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        <a href="/members/<?= (int) $member->id ?>"><?= __('member_manage_fee_classes') ?></a>
+    </div>
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const actions = document.getElementById('member-edit-actions');
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', () => {
+            actions.hidden = tab.id === 'fees-tab';
+        });
+    });
+    document.getElementById('member-edit-form').addEventListener('invalid', event => {
+        if (event.target !== event.currentTarget.querySelector(':invalid')) return;
+        const pane = event.target.closest('.tab-pane');
+        if (pane && !pane.classList.contains('active')) {
+            bootstrap.Tab.getOrCreateInstance(document.querySelector(`[data-bs-target="#${pane.id}"]`)).show();
+        }
+    }, true);
+});
+</script>

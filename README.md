@@ -225,6 +225,15 @@ Neu angelegte Datenbanken erhalten Fremdschlüssel für Mitglieder, Beitragszuor
 
 Die Initialisierung verwendet `CREATE TABLE IF NOT EXISTS` und ist keine Migration: Bereits vorhandene SQLite- und MySQL-Datenbanken erhalten diese Änderungen nicht automatisch. Vor einer manuellen Migration sind vorhandene doppelte Zuordnungen und verwaiste Datensätze zu prüfen und die Datenbank zu sichern. SQLite und MySQL unterscheiden sich weiterhin bei Unicode-Collation, erzwungenen `VARCHAR`-Längen, Dezimalpräzision sowie Datums-/Zeittypen.
 
+Für Benutzerrollen enthält `users` zusätzlich `role` mit Standardwert `user`; die bisherige Zugriffskontrolle verwendet weiterhin `admin`. Für bestehende MariaDB-/MySQL-Datenbanken nach einer Sicherung `database/migrate_user_roles.sql` einmal auf der richtigen Datenbank ausführen. Dabei wird `admin = 1` zu `admin` und `admin = 0` zu `treasurer`; das bisherige Flag bleibt erhalten. Die Migration nur ausführen, wenn `role` noch nicht existiert.
+
+Für bestehende SQLite-Datenbanken nach einer Sicherung und bei gestoppter Anwendung die folgenden Anweisungen einmal auf der konfigurierten SQLite-Datei ausführen, sofern `role` noch nicht existiert:
+
+```sql
+ALTER TABLE `users` ADD COLUMN `role` VARCHAR(20) NOT NULL DEFAULT 'user';
+UPDATE `users` SET `role` = CASE WHEN `admin` = 1 THEN 'admin' WHEN `admin` = 0 THEN 'treasurer' ELSE 'user' END;
+```
+
 ---
 
 ## 5. Standard-Zugangsdaten (Demo-Seed)

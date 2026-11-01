@@ -72,8 +72,13 @@ class AuthController extends Controller
      */
     public function switchLanguage(Request $request): void
     {
-        $locale = $request->query('lang', 'de');
+        if (!$this->validateCsrf($request)) {
+            return;
+        }
+
+        $locale = $request->post('lang', 'de');
         I18n::setLocale($locale);
+        $locale = I18n::getLocale();
         Session::set('user_locale', $locale);
 
         $user = Auth::user();
@@ -94,6 +99,10 @@ class AuthController extends Controller
      */
     public function logout(Request $request): void
     {
+        if (!$this->validateCsrf($request)) {
+            return;
+        }
+
         Auth::logout();
         $this->flash('success', __('logout_success'));
         $this->redirect('/login');

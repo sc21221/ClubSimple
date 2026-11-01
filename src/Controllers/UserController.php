@@ -8,6 +8,7 @@ use Clubmanager\Core\Controller;
 use Clubmanager\Core\Request;
 use Clubmanager\Core\Validator;
 use Clubmanager\Core\Auth;
+use Clubmanager\Models\User;
 use Clubmanager\Repositories\UserRepository;
 
 /**
@@ -72,7 +73,7 @@ class UserController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails() || !in_array($data['role'] ?? null, User::ROLES, true)) {
             $this->flash('danger', $validator->first('name') ?: __('validation_error'));
             $this->redirect('/users/create');
             return;
@@ -142,7 +143,7 @@ class UserController extends Controller
             $validator = Validator::make($data, ['password' => 'min:6']);
         }
 
-        if ($validator->fails()) {
+        if ($validator->fails() || !in_array($data['role'] ?? null, User::ROLES, true)) {
             $this->flash('danger', $validator->first('name') ?: __('validation_error'));
             $this->redirect('/users/' . $id . '/edit');
             return;

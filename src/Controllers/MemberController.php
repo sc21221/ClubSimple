@@ -25,6 +25,12 @@ use Clubmanager\Services\GdprService;
  */
 class MemberController extends Controller
 {
+    private const MEMBER_FIELDS = [
+        'salutation', 'sex', 'first_name', 'last_name', 'birth_date',
+        'email', 'phone', 'street', 'zip', 'city', 'country',
+        'membership_type', 'status', 'join_date', 'leave_date', 'invoice_marker',
+        'bank_holder', 'bank_name', 'bank_bic', 'bank_iban',
+    ];
     protected MemberRepository $memberRepo;
     protected FeeClassRepository $feeClassRepo;
     protected ClubRepository $clubRepo;
@@ -126,6 +132,9 @@ class MemberController extends Controller
 
         // Clean values
         $data['invoice_marker'] = !empty($data['invoice_marker']) ? 1 : 0;
+        if (isset($data['leave_date']) && $data['leave_date'] === '') {
+            $data['leave_date'] = null;
+        }
         if (!empty($data['bank_iban'])) {
             $data['bank_iban'] = strtoupper(preg_replace('/\s+/', '', (string)$data['bank_iban']));
         }
@@ -134,7 +143,9 @@ class MemberController extends Controller
         }
 
         $userId = Auth::user() ? (int) Auth::user()->id : null;
-        $member = $this->memberRepo->create($data, $userId);
+        $memberData = array_intersect_key($data, array_flip(self::MEMBER_FIELDS));
+        $memberData['club_id'] = (int) $this->clubRepo->getPrimary()->Id;
+        $member = $this->memberRepo->create($memberData, $userId);
 
         // Assign initial fee class if selected
         if (!empty($data['initial_fee_class_id'])) {
@@ -206,6 +217,7 @@ class MemberController extends Controller
         $this->render('members/edit', [
             'member' => $member,
             'feeClasses' => $feeClasses,
+            'assignedFees' => $member->getActiveFeeClasses(),
         ]);
     }
 
@@ -249,6 +261,9 @@ class MemberController extends Controller
         }
 
         $data['invoice_marker'] = !empty($data['invoice_marker']) ? 1 : 0;
+        if (isset($data['leave_date']) && $data['leave_date'] === '') {
+            $data['leave_date'] = null;
+        }
         if (!empty($data['bank_iban'])) {
             $data['bank_iban'] = strtoupper(preg_replace('/\s+/', '', (string)$data['bank_iban']));
         }
@@ -257,7 +272,7 @@ class MemberController extends Controller
         }
 
         $userId = Auth::user() ? (int) Auth::user()->id : null;
-        $this->memberRepo->update($member, $data, $userId);
+        $this->memberRepo->update($member, array_intersect_key($data, array_flip(self::MEMBER_FIELDS)), $userId);
 
         $this->flash('success', __('member_updated'));
         $this->redirect('/members/' . $id);
@@ -341,6 +356,34 @@ class MemberController extends Controller
 
         $this->flash('success', __('fee_class_saved'));
         $this->redirect('/members/' . $id);
+    }
+
+    /**
+     * Update one fee class assignment.
+     */
+    public function updateFeeClass(Request $request, int|string $id, int|string $assignmentId): void
+    {
+        if (!$this->validateCsrf($request)) {
+            return;
+        }
+
+        $member = $this->memberRepo->findById((int) $id);
+        if (!$member) {
+            $this->flash('danger', __('members_none_found'));
+            $this->redirect('/members');
+            return;
+        }
+
+        $feeClassId = filter_var($request->post('fee_class_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $userId = Auth::user() ? (int) Auth::user()->id : null;
+        if ($feeClassId === false || !$this->feeClassRepo->findById($feeClassId)
+            || !$this->feeClassRepo->updateAssignment((int) $member->id, (int) $assignmentId, $feeClassId, $userId)) {
+            $this->flash('danger', __('validation_error'));
+        } else {
+            $this->flash('success', __('fee_class_saved'));
+        }
+
+        $this->redirect('/members/' . $id . '/edit');
     }
 
     /**

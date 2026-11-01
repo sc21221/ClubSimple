@@ -38,6 +38,9 @@ return [
     // Roles
     'role_admin' => 'Administrator',
     'role_treasurer' => 'Kassenwart',
+    'role_secretary' => 'Schriftführer',
+    'role_board' => 'Vorstand',
+    'role_conductor' => 'Dirigent',
     'role_user' => 'Mitarbeiter',
 
     // Auth
@@ -170,6 +173,13 @@ return [
     'fee_class_delete_blocked' => 'Die Beitragsklasse kann nicht gelöscht werden, da Zuordnungen oder Buchungshistorien vorhanden sind.',
     'assigned_members_count' => 'Zugewiesene Mitglieder',
     'assigned_fees' => 'Zugewiesene Beitragsklassen',
+    'member_tab_personal' => 'Persönliche Stammdaten',
+    'member_tab_contact' => 'Anschrift und Kontakt',
+    'member_tab_membership' => 'Vereinszugehörigkeit',
+    'member_tab_bank' => 'Bankverbindung & SEPA-Mandat',
+    'member_no_fee_classes' => 'Diesem Mitglied ist keine Beitragsklasse zugewiesen.',
+    'member_fee_save_separately' => 'Änderungen an Beitragsklassen werden einzeln gespeichert.',
+    'member_manage_fee_classes' => 'Beitragsklassen in der Mitgliedsübersicht zuweisen oder entfernen',
     'assign_fee_class' => 'Beitragsklasse zuweisen',
     'custom_amount' => 'Abweichender Betrag (€)',
     'valid_from' => 'Gültig ab',

@@ -147,6 +147,7 @@ class DatabaseInitializer
               `password` VARCHAR(255) NOT NULL,
               `phone` VARCHAR(255) DEFAULT NULL,
               `admin` INTEGER NOT NULL DEFAULT 0,
+              `role` VARCHAR(20) NOT NULL DEFAULT 'user',
               `profile_image` VARCHAR(255) DEFAULT NULL,
               `locale` VARCHAR(5) NOT NULL DEFAULT 'de',
               `club_id` INTEGER DEFAULT NULL,
@@ -236,11 +237,11 @@ class DatabaseInitializer
         $now = date('Y-m-d H:i:s');
 
         $userStmt = $pdo->prepare("
-            INSERT INTO `users` (`name`, `email`, `password`, `phone`, `admin`, `locale`, `club_id`, `created_at`, `updated_at`)
-            VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
+            INSERT INTO `users` (`name`, `email`, `password`, `phone`, `admin`, `role`, `locale`, `club_id`, `created_at`, `updated_at`)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
         ");
-        $userStmt->execute(['Reinhard Schiessl (Admin)', 'admin@musikverein-denkendorf.de', $adminPasswordHash, '+49 711 3456781', 1, 'de', $now, $now]);
-        $userStmt->execute(['Kassenwart Denkendorf', 'kasse@musikverein-denkendorf.de', $treasurerPasswordHash, '+49 711 3456782', 0, 'de', $now, $now]);
+        $userStmt->execute(['Reinhard Schiessl (Admin)', 'admin@musikverein-denkendorf.de', $adminPasswordHash, '+49 711 3456781', 1, 'admin', 'de', $now, $now]);
+        $userStmt->execute(['Kassenwart Denkendorf', 'kasse@musikverein-denkendorf.de', $treasurerPasswordHash, '+49 711 3456782', 0, 'treasurer', 'de', $now, $now]);
 
         // 3. Seed Fee Classes
         $feeClassStmt = $pdo->prepare("

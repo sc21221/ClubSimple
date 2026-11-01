@@ -178,6 +178,45 @@ class FeeClassRepository
     }
 
     /**
+     * Change the fee class of a single assignment, preserving its other fields.
+     */
+    public function updateAssignment(int $memberId, int $assignmentId, int $feeClassId, ?int $userId = null): bool
+    {
+        $assignment = MemberFeeClass::find($assignmentId);
+        if (!$assignment || (int) $assignment->member_id !== $memberId) {
+            return false;
+        }
+
+        $conflicts = MemberFeeClass::where(
+            'member_id = ? AND fee_class_id = ? AND start_date = ? AND id <> ?',
+            [$memberId, $feeClassId, $assignment->start_date, $assignmentId]
+        );
+        if ($conflicts) {
+            return false;
+        }
+
+        if ((int) $assignment->fee_class_id === $feeClassId) {
+            return true;
+        }
+
+        $old = $assignment->toArray();
+        $assignment->fee_class_id = $feeClassId;
+        try {
+            $saved = $assignment->save();
+        } catch (\PDOException $e) {
+            if ($e->getCode() === '23000' || $e->getCode() === '23505') {
+                return false;
+            }
+            throw $e;
+        }
+
+        if ($saved) {
+            AuditService::log('MEMBER_FEE_UPDATED', 'member_fee_classes', $assignmentId, $old, $assignment->toArray(), $userId);
+        }
+        return $saved;
+    }
+
+    /**
      * Remove or deactivate a member fee class assignment.
      *
      * @param int $assignmentId

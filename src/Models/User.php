@@ -21,6 +21,7 @@ use Clubmanager\Core\Model;
  * @property string $password
  * @property string|null $phone
  * @property int $admin
+ * @property string $role
  * @property string|null $profile_image
  * @property string $locale
  * @property int|string|null $club_id
@@ -31,6 +32,8 @@ use Clubmanager\Core\Model;
  */
 class User extends Model
 {
+    public const ROLES = ['admin', 'treasurer', 'secretary', 'board', 'conductor', 'user'];
+
     protected static string $table = 'users';
     protected static string $primaryKey = 'id';
 
@@ -42,6 +45,11 @@ class User extends Model
     public function isAdmin(): bool
     {
         return (bool) ($this->admin ?? false);
+    }
+
+    public function getRole(): string
+    {
+        return in_array($this->role, self::ROLES, true) ? $this->role : ($this->isAdmin() ? 'admin' : 'treasurer');
     }
 
     /**

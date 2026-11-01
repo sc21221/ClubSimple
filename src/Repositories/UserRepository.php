@@ -61,7 +61,8 @@ class UserRepository
             'name' => trim((string)$data['name']),
             'email' => strtolower(trim((string)$data['email'])),
             'phone' => $data['phone'] ?? null,
-            'admin' => !empty($data['admin']) ? 1 : 0,
+            'role' => $data['role'],
+            'admin' => $data['role'] === 'admin' ? 1 : 0,
             'locale' => $data['locale'] ?? 'de',
             'club_id' => $data['club_id'] ?? 1,
             'created_at' => date('Y-m-d H:i:s'),
@@ -99,8 +100,9 @@ class UserRepository
         if (isset($data['phone'])) {
             $user->phone = $data['phone'];
         }
-        if (isset($data['admin'])) {
-            $user->admin = !empty($data['admin']) ? 1 : 0;
+        if (isset($data['role'])) {
+            $user->role = $data['role'];
+            $user->admin = $data['role'] === 'admin' ? 1 : 0;
         }
         if (isset($data['locale'])) {
             $user->locale = $data['locale'];

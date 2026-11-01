@@ -20,6 +20,11 @@ use Clubmanager\Repositories\ClubRepository;
  */
 class ClubController extends Controller
 {
+    private const CLUB_FIELDS = [
+        'name', 'name2', 'boss', 'street', 'zip', 'city', 'country',
+        'email', 'phone', 'bank_name', 'bank_creditor_id', 'bank_iban', 'bank_bic',
+    ];
+
     protected ClubRepository $repo;
 
     public function __construct()
@@ -74,7 +79,7 @@ class ClubController extends Controller
         $data['bank_bic'] = strtoupper(trim((string)$data['bank_bic']));
 
         $userId = Auth::user() ? (int) Auth::user()->id : null;
-        $this->repo->update($club, $data, $userId);
+        $this->repo->update($club, array_intersect_key($data, array_flip(self::CLUB_FIELDS)), $userId);
 
         $this->flash('success', __('club_updated'));
         $this->redirect('/club');

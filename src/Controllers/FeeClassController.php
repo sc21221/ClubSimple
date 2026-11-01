@@ -20,6 +20,11 @@ use Clubmanager\Repositories\FeeClassRepository;
  */
 class FeeClassController extends Controller
 {
+    private const FEE_CLASS_FIELDS = [
+        'name', 'description', 'base_amount', 'billing_cycle',
+        'min_age', 'max_age', 'is_active',
+    ];
+
     protected FeeClassRepository $repo;
 
     public function __construct()
@@ -84,7 +89,9 @@ class FeeClassController extends Controller
         $data['currency'] = 'EUR';
 
         $userId = Auth::user() ? (int) Auth::user()->id : null;
-        $this->repo->create($data, $userId);
+        $feeClassData = array_intersect_key($data, array_flip(self::FEE_CLASS_FIELDS));
+        $feeClassData['currency'] = $data['currency'];
+        $this->repo->create($feeClassData, $userId);
 
         $this->flash('success', __('fee_class_saved'));
         $this->redirect('/fee-classes');
@@ -148,7 +155,7 @@ class FeeClassController extends Controller
         $data['max_age'] = isset($data['max_age']) && $data['max_age'] !== '' ? (int)$data['max_age'] : 999;
 
         $userId = Auth::user() ? (int) Auth::user()->id : null;
-        $this->repo->update($feeClass, $data, $userId);
+        $this->repo->update($feeClass, array_intersect_key($data, array_flip(self::FEE_CLASS_FIELDS)), $userId);
 
         $this->flash('success', __('fee_class_updated'));
         $this->redirect('/fee-classes');

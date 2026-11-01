@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `admin` tinyint(1) NOT NULL DEFAULT 0,
+  `role` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
   `profile_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `locale` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'de',
   `club_id` bigint(20) UNSIGNED DEFAULT NULL,

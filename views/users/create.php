@@ -42,13 +42,13 @@
                         <option value="en">English (en)</option>
                     </select>
                 </div>
-                <div class="col-md-6 pt-4">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="admin" name="admin" value="1">
-                        <label class="form-check-label small fw-semibold" for="admin">
-                            <?= __('field_user_is_admin') ?>
-                        </label>
-                    </div>
+                <div class="col-md-6">
+                    <label for="role" class="form-label small fw-semibold"><?= __('field_user_role') ?></label>
+                    <select class="form-select" id="role" name="role" required>
+                        <?php foreach (\Clubmanager\Models\User::ROLES as $role): ?>
+                            <option value="<?= e($role) ?>" <?= $role === 'user' ? 'selected' : '' ?>><?= __('role_' . $role) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
 

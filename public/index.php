@@ -122,7 +122,7 @@ $router->get('/', function ($request) {
 $router->get('/login', [\Clubmanager\Controllers\AuthController::class, 'showLogin'], ['guest']);
 $router->post('/login', [\Clubmanager\Controllers\AuthController::class, 'login']);
 $router->post('/logout', [\Clubmanager\Controllers\AuthController::class, 'logout'], ['auth']);
-$router->get('/auth/lang', [\Clubmanager\Controllers\AuthController::class, 'switchLanguage']);
+$router->post('/auth/lang', [\Clubmanager\Controllers\AuthController::class, 'switchLanguage']);
 
 // Dashboard
 $router->get('/dashboard', [\Clubmanager\Controllers\DashboardController::class, 'index'], ['auth']);
@@ -137,6 +137,7 @@ $router->post('/members/{id}', [\Clubmanager\Controllers\MemberController::class
 $router->post('/members/{id}/archive', [\Clubmanager\Controllers\MemberController::class, 'archive'], ['auth']);
 $router->post('/members/{id}/delete', [\Clubmanager\Controllers\MemberController::class, 'delete'], ['auth']);
 $router->post('/members/{id}/fee', [\Clubmanager\Controllers\MemberController::class, 'assignFeeClass'], ['auth']);
+$router->post('/members/{id}/fee/{assignmentId}/update', [\Clubmanager\Controllers\MemberController::class, 'updateFeeClass'], ['auth']);
 $router->post('/members/{id}/fee/{assignmentId}/delete', [\Clubmanager\Controllers\MemberController::class, 'removeFeeClass'], ['auth']);
 $router->get('/members/{id}/export/json', [\Clubmanager\Controllers\MemberController::class, 'exportGdprJson'], ['auth']);
 $router->get('/members/{id}/export/pdf', [\Clubmanager\Controllers\MemberController::class, 'exportGdprPdf'], ['auth']);
