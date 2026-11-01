@@ -47,10 +47,12 @@ class DatabaseInitializer
      */
     protected static function createSqliteSchema(PDO $pdo): void
     {
+
         $pdo->exec('PRAGMA foreign_keys = ON');
+        // language=SQLite
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS `clubs` (
-              `Id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `Id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `name` VARCHAR(100) NOT NULL,
               `name2` VARCHAR(100) DEFAULT NULL,
               `boss` VARCHAR(40) DEFAULT NULL,
@@ -70,7 +72,7 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `fee_classes` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `name` VARCHAR(100) NOT NULL UNIQUE,
               `description` TEXT DEFAULT NULL,
               `base_amount` DECIMAL(10,2) NOT NULL,
@@ -84,7 +86,7 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `members` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `club_id` INTEGER NOT NULL DEFAULT 1,
               `salutation` VARCHAR(10) DEFAULT 'Herr' CHECK (`salutation` IS NULL OR `salutation` IN ('Herr', 'Frau', 'Divers')),
               `sex` VARCHAR(10) DEFAULT 'Männlich' CHECK (`sex` IS NULL OR `sex` IN ('Männlich', 'Weiblich', 'Divers')),
@@ -113,12 +115,12 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `departments` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `name` VARCHAR(100) NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS `member_departments` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `member_id` INTEGER NOT NULL,
               `department_id` INTEGER NOT NULL,
               `assigned_date` DATE DEFAULT NULL,
@@ -128,8 +130,24 @@ class DatabaseInitializer
               FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS `club_functions` (
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `name` VARCHAR(100) NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS `member_functions` (
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `member_id` INTEGER NOT NULL,
+              `function_id` INTEGER NOT NULL,
+              `start_date` DATE NOT NULL,
+              `end_date` DATE DEFAULT NULL,
+              `description` TEXT DEFAULT NULL,
+              FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE,
+              FOREIGN KEY (`function_id`) REFERENCES `club_functions` (`id`) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS `membership_fees` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `member_id` INTEGER NOT NULL,
               `fee_class_id` INTEGER NOT NULL,
               `amount` DECIMAL(10,2) NOT NULL,
@@ -142,7 +160,7 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `member_fee_classes` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `member_id` INTEGER NOT NULL,
               `fee_class_id` INTEGER NOT NULL,
               `custom_amount` DECIMAL(10,2) DEFAULT NULL,
@@ -156,7 +174,7 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `users` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `name` VARCHAR(255) NOT NULL,
               `email` VARCHAR(255) NOT NULL UNIQUE,
               `email_verified_at` TIMESTAMP NULL DEFAULT NULL,
@@ -175,7 +193,7 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `audit_logs` (
-              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               `user_id` INTEGER DEFAULT NULL,
               `action` VARCHAR(50) NOT NULL,
@@ -189,6 +207,8 @@ class DatabaseInitializer
 
             CREATE INDEX IF NOT EXISTS `idx_members_club_id` ON `members` (`club_id`);
             CREATE INDEX IF NOT EXISTS `idx_member_departments_department_id` ON `member_departments` (`department_id`);
+            CREATE INDEX IF NOT EXISTS `idx_member_functions_member_id` ON `member_functions` (`member_id`);
+            CREATE INDEX IF NOT EXISTS `idx_member_functions_function_id` ON `member_functions` (`function_id`);
             CREATE INDEX IF NOT EXISTS `idx_membership_fees_member_id` ON `membership_fees` (`member_id`);
             CREATE INDEX IF NOT EXISTS `idx_membership_fees_fee_class_id` ON `membership_fees` (`fee_class_id`);
             CREATE INDEX IF NOT EXISTS `idx_member_fee_classes_fee_class_id` ON `member_fee_classes` (`fee_class_id`);

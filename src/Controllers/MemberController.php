@@ -220,6 +220,8 @@ class MemberController extends Controller
             'assignedFees' => $member->getActiveFeeClasses(),
             'departments' => (new \Clubmanager\Repositories\DepartmentRepository())->getAll(),
             'assignedDepartments' => (new \Clubmanager\Repositories\DepartmentRepository())->getForMember((int) $member->id),
+            'functions' => (new \Clubmanager\Repositories\FunctionRepository())->getAll(),
+            'assignedFunctions' => (new \Clubmanager\Repositories\FunctionRepository())->getForMember((int) $member->id),
         ]);
     }
 

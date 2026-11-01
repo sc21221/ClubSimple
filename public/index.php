@@ -141,6 +141,8 @@ $router->post('/members/{id}/fee/{assignmentId}/update', [\Clubmanager\Controlle
 $router->post('/members/{id}/fee/{assignmentId}/delete', [\Clubmanager\Controllers\MemberController::class, 'removeFeeClass'], ['auth']);
 $router->post('/members/{id}/departments', [\Clubmanager\Controllers\DepartmentController::class, 'assign'], ['auth']);
 $router->post('/members/{id}/departments/{assignmentId}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'remove'], ['auth']);
+$router->post('/members/{id}/functions', [\Clubmanager\Controllers\FunctionController::class, 'assign'], ['auth']);
+$router->post('/members/{id}/functions/{assignmentId}/delete', [\Clubmanager\Controllers\FunctionController::class, 'remove'], ['auth']);
 $router->get('/members/{id}/export/json', [\Clubmanager\Controllers\MemberController::class, 'exportGdprJson'], ['auth']);
 $router->get('/members/{id}/export/pdf', [\Clubmanager\Controllers\MemberController::class, 'exportGdprPdf'], ['auth']);
 $router->post('/members/{id}/anonymize', [\Clubmanager\Controllers\MemberController::class, 'anonymize'], ['auth']);
@@ -153,6 +155,16 @@ $router->get('/departments/{id}/edit', [\Clubmanager\Controllers\DepartmentContr
 $router->post('/departments/{id}/update', [\Clubmanager\Controllers\DepartmentController::class, 'update'], ['auth']);
 $router->post('/departments/{id}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'delete'], ['auth']);
 $router->get('/departments/{id}/members', [\Clubmanager\Controllers\DepartmentController::class, 'show'], ['auth']);
+
+// Functions
+$router->get('/functions', [\Clubmanager\Controllers\FunctionController::class, 'index'], ['auth']);
+$router->get('/functions/create', [\Clubmanager\Controllers\FunctionController::class, 'create'], ['auth']);
+$router->post('/functions', [\Clubmanager\Controllers\FunctionController::class, 'store'], ['auth']);
+$router->get('/functions/{id}/edit', [\Clubmanager\Controllers\FunctionController::class, 'edit'], ['auth']);
+$router->post('/functions/{id}/update', [\Clubmanager\Controllers\FunctionController::class, 'update'], ['auth']);
+$router->post('/functions/{id}/delete', [\Clubmanager\Controllers\FunctionController::class, 'delete'], ['auth']);
+$router->get('/functions/{id}/members', [\Clubmanager\Controllers\FunctionController::class, 'members'], ['auth']);
+$router->get('/functions/{id}/history', [\Clubmanager\Controllers\FunctionController::class, 'history'], ['auth']);
 
 // Fee Classes
 $router->get('/fee-classes', [\Clubmanager\Controllers\FeeClassController::class, 'index'], ['auth']);

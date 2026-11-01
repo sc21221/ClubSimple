@@ -114,6 +114,13 @@ Webbasierte Vereinsverwaltungssoftware **"Clubmanager"** für den **Musikverein 
 - `member_departments`: `id` (automatisch erzeugter Primärschlüssel), `member_id` und `department_id` (Pflichtfelder und Fremdschlüssel), `assigned_date` (`DATE`, optional), `description` (`TEXT`, optional). Das Paar `member_id`/`department_id` ist eindeutig; beim Löschen eines Mitglieds oder einer Abteilung werden dessen Zuordnungen gelöscht.
 - Für bestehende Datenbanken nach einer Sicherung `database/migrate_departments.sql` für MariaDB/MySQL bzw. `database/migrate_departments_sqlite.sql` für SQLite auf der richtigen Datenbank ausführen. Bei SQLite müssen Fremdschlüssel pro Verbindung mit `PRAGMA foreign_keys = ON` aktiviert sein; die Anwendung aktiviert sie beim Verbindungsaufbau. Die Migrationen erstellen fehlende Tabellen, ändern aber keine bereits vorhandenen Tabellen gleichen Namens.
 
+### 2.11 Vereinsfunktionen (Datenbankschema)
+- `club_functions`: `id` (automatisch erzeugter Primärschlüssel), `name` (`VARCHAR(100)`, Pflichtfeld).
+- `member_functions`: `id`, `member_id` und `function_id` (Pflichtfelder und indizierte Fremdschlüssel), `start_date` (`DATE`, Pflichtfeld), `end_date` (`DATE`, optional) und `description` (`TEXT`, optional). Für dasselbe Mitglied und dieselbe Funktion sind mehrere Zeiträume möglich; Überschneidungen werden nicht verhindert. Beim Löschen eines Mitglieds oder einer Funktion werden die Zuordnungen gelöscht.
+- Für bestehende Datenbanken nach einer Sicherung `database/migrate_functions.sql` für MariaDB/MySQL bzw. `database/migrate_functions_sqlite.sql` für SQLite auf der richtigen Datenbank ausführen. Die Migrationen erstellen fehlende Tabellen, ändern aber keine bereits vorhandenen Tabellen gleichen Namens. SQLite-Fremdschlüssel müssen pro Verbindung mit `PRAGMA foreign_keys = ON` aktiviert sein.
+- Über **Funktionen** lassen sich Funktionen anlegen und bearbeiten; zugeordnete Funktionen können erst nach Entfernen ihrer Zuordnungen gelöscht werden. Im Tab **Funktionen** eines Mitglieds können Zuordnungen mit Startdatum, optionalem Enddatum und Beschreibung hinzugefügt oder entfernt werden.
+- Die Liste aktueller Mitglieder umfasst Zuordnungen ab einschließlich Startdatum bis einschließlich Enddatum; ohne Enddatum sind sie unbefristet. Die Historie enthält alle bereits begonnenen Zuordnungen, auch beendete, aber keine zukünftigen. Entfernte Zuordnungen erscheinen nicht mehr in der Historie.
+
 ---
 
 ## 3. Verzeichnisstruktur

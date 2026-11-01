@@ -22,6 +22,7 @@
     <li class="nav-item" role="presentation"><button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab" aria-controls="bank" aria-selected="false"><?= __('member_tab_bank') ?></button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees" type="button" role="tab" aria-controls="fees" aria-selected="false"><?= __('assigned_fees') ?></button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" id="departments-tab" data-bs-toggle="tab" data-bs-target="#departments" type="button" role="tab" aria-controls="departments" aria-selected="false"><?= __('nav_departments') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="functions-tab" data-bs-toggle="tab" data-bs-target="#functions" type="button" role="tab" aria-controls="functions" aria-selected="false"><?= __('nav_functions') ?></button></li>
 </ul>
 
 <div class="tab-content">
@@ -290,6 +291,70 @@
         </div>
     </div>
 </div>
+
+<div class="tab-pane fade" id="functions" role="tabpanel" aria-labelledby="functions-tab" tabindex="0">
+    <div class="card shadow-sm border-0">
+        <div class="card-header card-header-custom py-3">
+            <span class="fw-bold"><i class="bi bi-person-badge text-primary me-2"></i> <?= __('function_assignments') ?></span>
+        </div>
+        <div class="card-body">
+            <?php if (empty($assignedFunctions)): ?>
+                <p class="text-muted"><?= __('function_no_assignments') ?></p>
+            <?php else: ?>
+                <div class="table-responsive mb-4">
+                    <table class="table align-middle">
+                        <thead><tr><th><?= __('function_name') ?></th><th><?= __('valid_from') ?></th><th><?= __('valid_until') ?></th><th><?= __('function_description') ?></th><th class="text-end"><?= __('actions') ?></th></tr></thead>
+                        <tbody>
+                        <?php foreach ($assignedFunctions as $assignment): ?>
+                            <tr>
+                                <td><?= e($assignment->name) ?></td>
+                                <td><?= e($assignment->start_date ?? '') ?></td>
+                                <td><?= e($assignment->end_date ?? '') ?></td>
+                                <td><?= e($assignment->description ?? '') ?></td>
+                                <td class="text-end">
+                                    <form action="/members/<?= (int) $member->id ?>/functions/<?= (int) $assignment->id ?>/delete" method="POST" onsubmit="return confirm(<?= e(json_encode(__('function_confirm_remove'), JSON_HEX_APOS | JSON_HEX_QUOT)) ?>);">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"><?= __('delete') ?></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+            <?php if (!empty($functions)): ?>
+                <form action="/members/<?= (int) $member->id ?>/functions" method="POST" class="row g-3 align-items-end">
+                    <?= csrf_field() ?>
+                    <div class="col-md-3">
+                        <label for="function_id" class="form-label small fw-semibold"><?= __('nav_functions') ?> *</label>
+                        <select class="form-select" id="function_id" name="function_id" required>
+                            <option value=""><?= __('function_select') ?></option>
+                            <?php foreach ($functions as $availableFunction): ?>
+                                <option value="<?= (int) $availableFunction->id ?>"><?= e($availableFunction->name) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="function_start_date" class="form-label small fw-semibold"><?= __('valid_from') ?> *</label>
+                        <input type="date" class="form-control" id="function_start_date" name="start_date" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="function_end_date" class="form-label small fw-semibold"><?= __('valid_until') ?></label>
+                        <input type="date" class="form-control" id="function_end_date" name="end_date">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="function_description" class="form-label small fw-semibold"><?= __('function_description') ?></label>
+                        <input type="text" class="form-control" id="function_description" name="description">
+                    </div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-primary"><?= __('function_assign') ?></button></div>
+                </form>
+            <?php else: ?>
+                <p class="text-muted mb-0"><?= __('functions_none') ?></p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 </div>
 
 <script>
@@ -297,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const actions = document.getElementById('member-edit-actions');
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', () => {
-            actions.hidden = tab.id === 'fees-tab' || tab.id === 'departments-tab';
+            actions.hidden = tab.id === 'fees-tab' || tab.id === 'departments-tab' || tab.id === 'functions-tab';
         });
     });
     document.getElementById('member-edit-form').addEventListener('invalid', event => {
