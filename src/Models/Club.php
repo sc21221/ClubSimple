@@ -37,6 +37,7 @@ class Club extends Model
 {
     protected static string $table = 'clubs';
     protected static string $primaryKey = 'Id';
+    protected static bool $tracksUpdatedBy = true;
 
     /**
      * Provide seamless alias for lower-case id.

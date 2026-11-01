@@ -302,8 +302,11 @@ class MemberController extends Controller
         $member = $this->memberRepo->findById((int) $id);
         if ($member) {
             $userId = Auth::user() ? (int) Auth::user()->id : null;
-            $this->memberRepo->delete($member, $userId);
-            $this->flash('success', __('member_deleted'));
+            $deleted = $this->memberRepo->delete($member, $userId);
+            $this->flash(
+                $deleted ? 'success' : 'danger',
+                __($deleted ? 'member_deleted' : 'member_delete_blocked')
+            );
         }
 
         $this->redirect('/members');

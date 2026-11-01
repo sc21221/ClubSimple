@@ -28,6 +28,11 @@ abstract class Model
     protected static string $primaryKey = 'id';
 
     /**
+     * @var bool Whether the table has an updated_by column
+     */
+    protected static bool $tracksUpdatedBy = false;
+
+    /**
      * @var array<string, mixed> Current model attributes
      */
     protected array $attributes = [];
@@ -261,8 +266,8 @@ abstract class Model
         $table = static::$table;
         $pk = static::$primaryKey;
 
-        // Auto manage updated_by if logged in
-        if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['user_name'])) {
+        // Auto manage updated_by only for tables that define the column.
+        if (static::$tracksUpdatedBy && session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['user_name'])) {
             $this->attributes['updated_by'] = $_SESSION['user_name'];
         }
 
@@ -275,19 +280,23 @@ abstract class Model
 
             $setParts = [];
             $params = [];
-            foreach ($this->attributes as $key => $val) {
-                if ($key === $pk) {
+            foreach ($dirty as $key => $change) {
+                if ($key === $pk || ($key === 'updated_at' && array_key_exists('updated_at', $this->attributes))) {
                     continue;
                 }
                 $setParts[] = "`{$key}` = ?";
-                $params[] = $val;
+                $params[] = $change['new'];
+            }
+
+            if (array_key_exists('updated_at', $this->attributes)) {
+                $setParts[] = '`updated_at` = CURRENT_TIMESTAMP';
             }
 
             $params[] = $this->attributes[$pk];
             $sql = "UPDATE `{$table}` SET " . implode(', ', $setParts) . " WHERE `{$pk}` = ?";
             Database::execute($sql, $params);
 
-            $this->original = $this->attributes;
+            $this->reloadFromDatabase();
             return true;
         } else {
             // INSERT
@@ -310,8 +319,31 @@ abstract class Model
             }
 
             $this->exists = true;
-            $this->original = $this->attributes;
+            $this->reloadFromDatabase();
             return true;
+        }
+    }
+
+    /**
+     * Reload saved attributes so database defaults and generated values are reflected.
+     *
+     * @return void
+     */
+    protected function reloadFromDatabase(): void
+    {
+        $pk = static::$primaryKey;
+        $id = $this->attributes[$pk] ?? null;
+        if ($id === null) {
+            return;
+        }
+
+        $row = Database::fetchOne(
+            'SELECT * FROM `' . static::$table . '` WHERE `' . $pk . '` = ? LIMIT 1',
+            [$id]
+        );
+        if ($row !== null) {
+            $this->attributes = $row;
+            $this->original = $row;
         }
     }
 

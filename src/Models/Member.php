@@ -19,15 +19,15 @@ use DateTimeImmutable;
  *
  * @property int $id
  * @property int $club_id
- * @property string $salutation
- * @property string $sex
+ * @property string|null $salutation
+ * @property string|null $sex
  * @property string $first_name
  * @property string $last_name
  * @property string|null $email
  * @property string|null $phone
- * @property string $membership_type
- * @property string $status
- * @property int $invoice_marker
+ * @property string|null $membership_type
+ * @property string|null $status
+ * @property int|null $invoice_marker
  * @property string|null $street
  * @property string|null $zip
  * @property string|null $city
@@ -47,6 +47,7 @@ class Member extends Model
 {
     protected static string $table = 'members';
     protected static string $primaryKey = 'id';
+    protected static bool $tracksUpdatedBy = true;
 
     /**
      * Get member's full name.
@@ -123,7 +124,7 @@ class Member extends Model
                 FROM `member_fee_classes` mfc
                 JOIN `fee_classes` fc ON fc.id = mfc.fee_class_id
                 WHERE mfc.member_id = ? AND mfc.is_active = 1
-                ORDER BY fc.name ASC";
+                ORDER BY fc.name";
         return Database::fetchAll($sql, [$this->id]);
     }
 

@@ -170,8 +170,11 @@ class FeeClassController extends Controller
         $feeClass = $this->repo->findById((int) $id);
         if ($feeClass) {
             $userId = Auth::user() ? (int) Auth::user()->id : null;
-            $this->repo->delete($feeClass, $userId);
-            $this->flash('info', __('fee_class_deleted'));
+            $deleted = $this->repo->delete($feeClass, $userId);
+            $this->flash(
+                $deleted ? 'info' : 'danger',
+                __($deleted ? 'fee_class_deleted' : 'fee_class_delete_blocked')
+            );
         }
 
         $this->redirect('/fee-classes');

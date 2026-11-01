@@ -47,9 +47,10 @@ class DatabaseInitializer
      */
     protected static function createSqliteSchema(PDO $pdo): void
     {
+        $pdo->exec('PRAGMA foreign_keys = ON');
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS `clubs` (
-              `Id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `Id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `name` VARCHAR(100) NOT NULL,
               `name2` VARCHAR(100) DEFAULT NULL,
               `boss` VARCHAR(40) DEFAULT NULL,
@@ -69,12 +70,12 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `fee_classes` (
-              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `name` VARCHAR(100) NOT NULL UNIQUE,
               `description` TEXT DEFAULT NULL,
               `base_amount` DECIMAL(10,2) NOT NULL,
               `currency` VARCHAR(3) DEFAULT 'EUR',
-              `billing_cycle` VARCHAR(20) DEFAULT 'Jährlich',
+              `billing_cycle` VARCHAR(20) DEFAULT 'Jährlich' CHECK (`billing_cycle` IS NULL OR `billing_cycle` IN ('Jährlich', 'Halbjährlich', 'Vierteljährlich', 'Monatlich')),
               `is_active` INTEGER DEFAULT 1,
               `min_age` INTEGER DEFAULT 0,
               `max_age` INTEGER DEFAULT 999,
@@ -83,16 +84,16 @@ class DatabaseInitializer
             );
 
             CREATE TABLE IF NOT EXISTS `members` (
-              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `club_id` INTEGER NOT NULL DEFAULT 1,
-              `salutation` VARCHAR(10) DEFAULT 'Herr',
-              `sex` VARCHAR(10) DEFAULT 'Männlich',
+              `salutation` VARCHAR(10) DEFAULT 'Herr' CHECK (`salutation` IS NULL OR `salutation` IN ('Herr', 'Frau', 'Divers')),
+              `sex` VARCHAR(10) DEFAULT 'Männlich' CHECK (`sex` IS NULL OR `sex` IN ('Männlich', 'Weiblich', 'Divers')),
               `first_name` VARCHAR(100) NOT NULL,
               `last_name` VARCHAR(100) NOT NULL,
               `email` VARCHAR(255) DEFAULT NULL,
               `phone` VARCHAR(50) DEFAULT NULL,
-              `membership_type` VARCHAR(30) DEFAULT 'Vollmitglied',
-              `status` VARCHAR(20) DEFAULT 'Aktiv',
+              `membership_type` VARCHAR(30) DEFAULT 'Vollmitglied' CHECK (`membership_type` IS NULL OR `membership_type` IN ('Vollmitglied', 'Fördermitglied', 'Jugendmitglied', 'Ehrenmitglied')),
+              `status` VARCHAR(20) DEFAULT 'Aktiv' CHECK (`status` IS NULL OR `status` IN ('Aktiv', 'Inaktiv', 'Gesperrt')),
               `invoice_marker` INTEGER DEFAULT 0,
               `street` VARCHAR(255) DEFAULT NULL,
               `zip` VARCHAR(255) DEFAULT NULL,
@@ -107,33 +108,39 @@ class DatabaseInitializer
               `bank_holder` VARCHAR(255) DEFAULT NULL,
               `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               `updated_by` VARCHAR(80) DEFAULT NULL,
-              `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (`club_id`) REFERENCES `clubs` (`Id`) ON DELETE RESTRICT
             );
 
             CREATE TABLE IF NOT EXISTS `membership_fees` (
-              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `member_id` INTEGER NOT NULL,
               `fee_class_id` INTEGER NOT NULL,
               `amount` DECIMAL(10,2) NOT NULL,
               `due_date` DATE NOT NULL,
               `paid_date` DATE DEFAULT NULL,
-              `status` VARCHAR(20) DEFAULT 'Offen',
-              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              `status` VARCHAR(20) DEFAULT 'Offen' CHECK (`status` IS NULL OR `status` IN ('Offen', 'Bezahlt', 'Überfällig')),
+              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE RESTRICT,
+              FOREIGN KEY (`fee_class_id`) REFERENCES `fee_classes` (`id`) ON DELETE RESTRICT
             );
 
             CREATE TABLE IF NOT EXISTS `member_fee_classes` (
-              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `member_id` INTEGER NOT NULL,
               `fee_class_id` INTEGER NOT NULL,
               `custom_amount` DECIMAL(10,2) DEFAULT NULL,
               `start_date` DATE NOT NULL,
               `end_date` DATE DEFAULT NULL,
               `is_active` INTEGER DEFAULT 1,
-              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE (`member_id`, `fee_class_id`, `start_date`),
+              FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE RESTRICT,
+              FOREIGN KEY (`fee_class_id`) REFERENCES `fee_classes` (`id`) ON DELETE RESTRICT
             );
 
             CREATE TABLE IF NOT EXISTS `users` (
-              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `name` VARCHAR(255) NOT NULL,
               `email` VARCHAR(255) NOT NULL UNIQUE,
               `email_verified_at` TIMESTAMP NULL DEFAULT NULL,
@@ -146,11 +153,12 @@ class DatabaseInitializer
               `created_by` INTEGER DEFAULT NULL,
               `remember_token` VARCHAR(100) DEFAULT NULL,
               `created_at` TIMESTAMP NULL DEFAULT NULL,
-              `updated_at` TIMESTAMP NULL DEFAULT NULL
+              `updated_at` TIMESTAMP NULL DEFAULT NULL,
+              FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
             );
 
             CREATE TABLE IF NOT EXISTS `audit_logs` (
-              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
               `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
               `user_id` INTEGER DEFAULT NULL,
               `action` VARCHAR(50) NOT NULL,
@@ -158,8 +166,17 @@ class DatabaseInitializer
               `entity_id` INTEGER DEFAULT NULL,
               `old_values` TEXT DEFAULT NULL,
               `new_values` TEXT DEFAULT NULL,
-              `ip_address` VARCHAR(45) DEFAULT NULL
+              `ip_address` VARCHAR(45) DEFAULT NULL,
+              FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
             );
+
+            CREATE INDEX IF NOT EXISTS `idx_members_club_id` ON `members` (`club_id`);
+            CREATE INDEX IF NOT EXISTS `idx_membership_fees_member_id` ON `membership_fees` (`member_id`);
+            CREATE INDEX IF NOT EXISTS `idx_membership_fees_fee_class_id` ON `membership_fees` (`fee_class_id`);
+            CREATE INDEX IF NOT EXISTS `idx_member_fee_classes_fee_class_id` ON `member_fee_classes` (`fee_class_id`);
+            CREATE INDEX IF NOT EXISTS `idx_audit_entity` ON `audit_logs` (`entity_type`, `entity_id`);
+            CREATE INDEX IF NOT EXISTS `idx_audit_user` ON `audit_logs` (`user_id`);
+            CREATE INDEX IF NOT EXISTS `idx_audit_timestamp` ON `audit_logs` (`timestamp`);
         ");
     }
 

@@ -20,7 +20,7 @@ use Clubmanager\Core\Model;
  * @property float|string $amount
  * @property string $due_date
  * @property string|null $paid_date
- * @property string $status
+ * @property string|null $status
  * @property string $created_at
  */
 class MembershipFee extends Model

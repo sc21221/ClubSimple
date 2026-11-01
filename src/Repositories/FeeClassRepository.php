@@ -109,6 +109,16 @@ class FeeClassRepository
     {
         $old = $feeClass->toArray();
         $id = (int) $feeClass->id;
+
+        $references = Database::fetchOne(
+            'SELECT EXISTS(SELECT 1 FROM `membership_fees` WHERE `fee_class_id` = ?) AS has_fees,
+                    EXISTS(SELECT 1 FROM `member_fee_classes` WHERE `fee_class_id` = ?) AS has_assignments',
+            [$id, $id]
+        );
+        if (!empty($references['has_fees']) || !empty($references['has_assignments'])) {
+            return false;
+        }
+
         $deleted = $feeClass->delete();
 
         if ($deleted) {

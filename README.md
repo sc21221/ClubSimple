@@ -179,8 +179,9 @@ ClubSimple/
 │   ├── sepa/                  # Generierte pain.008.001.02 XML-Dateien
 │   └── database.sqlite        # SQLite-Datenbank (automatisch erzeugt)
 ├── tests/
-│   ├── test_clubmanager.php   # Unit- & Service-Verifikationstest
-│   └── test_http_routes.php   # Front-Controller & Route-Test
+│   ├── test_clubmanager.php                 # Unit- & Service-Verifikationstest
+│   ├── test_http_routes.php                # Front-Controller & Route-Test
+│   └── test_model_schema_consistency.php   # Modelle, Constraints & Schema-Defaults
 ├── views/                     # Native PHP-Views
 ├── .env.example
 ├── .env
@@ -217,6 +218,12 @@ php -S localhost:8000 -t public/
    DB_PASSWORD=ihr_passwort
    ```
 
+### Schema-Integrität und Bestandsdaten
+
+Neu angelegte Datenbanken erhalten Fremdschlüssel für Mitglieder, Beitragszuordnungen und Buchungen, eine eindeutige Beitragszuordnung pro Mitglied/Klasse/Startdatum sowie zusätzliche Suchindizes. SQLite prüft außerdem die in MySQL als `ENUM` definierten Werte. Referenzierte Mitglieder und Beitragsklassen können nicht gelöscht werden; Beitragszuordnungen und Buchungshistorien bleiben erhalten. Mitglieder mit Historie können stattdessen archiviert oder anonymisiert werden.
+
+Die Initialisierung verwendet `CREATE TABLE IF NOT EXISTS` und ist keine Migration: Bereits vorhandene SQLite- und MySQL-Datenbanken erhalten diese Änderungen nicht automatisch. Vor einer manuellen Migration sind vorhandene doppelte Zuordnungen und verwaiste Datensätze zu prüfen und die Datenbank zu sichern. SQLite und MySQL unterscheiden sich weiterhin bei Unicode-Collation, erzwungenen `VARCHAR`-Längen, Dezimalpräzision sowie Datums-/Zeittypen.
+
 ---
 
 ## 5. Standard-Zugangsdaten (Demo-Seed)
@@ -230,7 +237,7 @@ php -S localhost:8000 -t public/
 
 ## 6. Automatisierte Tests ausführen
 
-Das System verfügt über zwei eigenständige Testsuiten:
+Das System verfügt über eigenständige Testsuiten:
 
 ```bash
 # 1. Kernfunktionen, SEPA-XML, Altersrekategorisierung und Audit-Trail testen:
@@ -238,6 +245,7 @@ php tests/test_clubmanager.php
 
 # 2. Front-Controller, View-Rendering und Routing testen:
 php tests/test_http_routes.php
-```
 
-Beide Testsuiten schließen mit 100% Erfolgsquote ab.
+# 3. Modellverhalten, Datenbank-Constraints und Löschschutz isoliert testen:
+php tests/test_model_schema_consistency.php
+```

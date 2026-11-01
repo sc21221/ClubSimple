@@ -69,7 +69,9 @@ CREATE TABLE IF NOT EXISTS `members` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_by` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_members_club_id` (`club_id`),
+  CONSTRAINT `fk_members_club` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`Id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `membership_fees` (
@@ -83,7 +85,9 @@ CREATE TABLE IF NOT EXISTS `membership_fees` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `member_id` (`member_id`),
-  KEY `fee_class_id` (`fee_class_id`)
+  KEY `fee_class_id` (`fee_class_id`),
+  CONSTRAINT `fk_membership_fees_member` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_membership_fees_fee_class` FOREIGN KEY (`fee_class_id`) REFERENCES `fee_classes` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `member_fee_classes` (
@@ -97,7 +101,9 @@ CREATE TABLE IF NOT EXISTS `member_fee_classes` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_member_fee_class` (`member_id`,`fee_class_id`,`start_date`),
-  KEY `fee_class_id` (`fee_class_id`)
+  KEY `fee_class_id` (`fee_class_id`),
+  CONSTRAINT `fk_member_fee_classes_member` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_member_fee_classes_fee_class` FOREIGN KEY (`fee_class_id`) REFERENCES `fee_classes` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `users` (
@@ -116,7 +122,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `users_email_unique` (`email`)
+  UNIQUE KEY `users_email_unique` (`email`),
+  CONSTRAINT `fk_users_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `audit_logs` (
@@ -132,7 +139,8 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   PRIMARY KEY (`id`),
   KEY `idx_entity` (`entity_type`, `entity_id`),
   KEY `idx_user` (`user_id`),
-  KEY `idx_timestamp` (`timestamp`)
+  KEY `idx_timestamp` (`timestamp`),
+  CONSTRAINT `fk_audit_logs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;

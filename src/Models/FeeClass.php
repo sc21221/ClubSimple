@@ -19,11 +19,11 @@ use Clubmanager\Core\Database;
  * @property string $name
  * @property string|null $description
  * @property float|string $base_amount
- * @property string $currency
- * @property string $billing_cycle
- * @property int $is_active
- * @property int $min_age
- * @property int $max_age
+ * @property string|null $currency
+ * @property string|null $billing_cycle
+ * @property int|null $is_active
+ * @property int|null $min_age
+ * @property int|null $max_age
  * @property string $created_at
  * @property string $updated_at
  */
