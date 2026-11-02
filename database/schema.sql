@@ -132,10 +132,18 @@ CREATE TABLE IF NOT EXISTS `member_events` (
   CONSTRAINT `fk_member_events_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `sepa_runs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `due_date` date NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `membership_fees` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `member_id` int(11) NOT NULL,
   `fee_class_id` int(11) NOT NULL,
+  `sepa_run_id` int(11) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `due_date` date NOT NULL,
   `paid_date` date DEFAULT NULL,
@@ -144,8 +152,10 @@ CREATE TABLE IF NOT EXISTS `membership_fees` (
   PRIMARY KEY (`id`),
   KEY `member_id` (`member_id`),
   KEY `fee_class_id` (`fee_class_id`),
+  KEY `idx_membership_fees_sepa_run_id` (`sepa_run_id`),
   CONSTRAINT `fk_membership_fees_member` FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_membership_fees_fee_class` FOREIGN KEY (`fee_class_id`) REFERENCES `fee_classes` (`id`) ON DELETE RESTRICT
+  CONSTRAINT `fk_membership_fees_fee_class` FOREIGN KEY (`fee_class_id`) REFERENCES `fee_classes` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_membership_fees_sepa_run` FOREIGN KEY (`sepa_run_id`) REFERENCES `sepa_runs` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `member_fee_classes` (

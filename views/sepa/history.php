@@ -2,6 +2,7 @@
     <div>
         <h2 class="h3 fw-bold mb-1"><?= __('sepa_history_title') ?></h2>
         <p class="text-muted mb-0">Übersicht aller durchgeführten SEPA-Lastschriftläufe</p>
+        <p class="text-muted small mb-0">Ältere Buchungen ohne Laufkennung sind unter „Offene Posten“ sichtbar, sofern sie noch offen sind.</p>
     </div>
     <a href="/sepa" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i> <?= __('back') ?>

@@ -205,6 +205,9 @@ $router->post('/fee-classes/{id}/delete', [FeeClassController::class, 'delete'],
 
 // SEPA Direct Debit Processing
 $router->get('/sepa', [SepaController::class, 'index'], ['auth']);
+$router->get('/sepa/open', [SepaController::class, 'open'], ['auth']);
+$router->post('/sepa/open/paid', [SepaController::class, 'markOpenPaid'], ['auth']);
+$router->post('/sepa/runs/{id}/delete', [SepaController::class, 'deleteRun'], ['auth']);
 $router->get('/sepa/preview', [SepaController::class, 'preview'], ['auth']);
 $router->post('/sepa/execute', [SepaController::class, 'execute'], ['auth']);
 $router->get('/sepa/download', [SepaController::class, 'download'], ['auth']);

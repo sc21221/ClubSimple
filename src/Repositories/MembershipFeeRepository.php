@@ -15,6 +15,79 @@ use Clubmanager\Core\Database;
  */
 class MembershipFeeRepository
 {
+    public function getRuns(): array
+    {
+        return Database::fetchAll('SELECT id, created_at, due_date FROM `sepa_runs` ORDER BY id DESC');
+    }
+
+    public function deleteRun(int $id): void
+    {
+        $db = Database::getConnection();
+        $db->beginTransaction();
+        try {
+            $lock = $db->getAttribute(\PDO::ATTR_DRIVER_NAME) === 'mysql' ? ' FOR UPDATE' : '';
+            $stmt = $db->prepare('SELECT id FROM `sepa_runs` WHERE id = ?' . $lock);
+            $stmt->execute([$id]);
+            if (!$stmt->fetch()) {
+                throw new \InvalidArgumentException('Der SEPA-Lauf wurde nicht gefunden.');
+            }
+            $stmt = $db->prepare('SELECT status, paid_date FROM `membership_fees` WHERE sepa_run_id = ?' . $lock);
+            $stmt->execute([$id]);
+            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $fee) {
+                if ($fee['paid_date'] !== null || !in_array($fee['status'], ['Offen', 'Überfällig'], true)) {
+                    throw new \InvalidArgumentException('Ein Lauf mit bereits verbuchten Posten kann nicht gelöscht werden.');
+                }
+            }
+            $stmt = $db->prepare('DELETE FROM `membership_fees` WHERE sepa_run_id = ?');
+            $stmt->execute([$id]);
+            $stmt = $db->prepare('DELETE FROM `sepa_runs` WHERE id = ?');
+            $stmt->execute([$id]);
+            $db->commit();
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
+    /** @return array<int, array<string, mixed>> */
+    public function getOpenItems(): array
+    {
+        return Database::fetchAll("SELECT mf.*, m.first_name, m.last_name, fc.name AS fee_class_name
+            FROM `membership_fees` mf
+            JOIN `members` m ON m.id = mf.member_id
+            JOIN `fee_classes` fc ON fc.id = mf.fee_class_id
+            WHERE mf.status IN ('Offen', 'Überfällig') AND mf.paid_date IS NULL
+            ORDER BY mf.due_date, mf.id");
+    }
+
+    /** @param int[] $ids */
+    public function markOpenItemsPaid(array $ids): void
+    {
+        if ($ids === [] || count($ids) !== count(array_unique($ids))) {
+            throw new \InvalidArgumentException('Ungültige Auswahl.');
+        }
+        foreach ($ids as $id) {
+            if (!is_int($id) || $id <= 0) {
+                throw new \InvalidArgumentException('Ungültige Auswahl.');
+            }
+        }
+        $db = Database::getConnection();
+        $db->beginTransaction();
+        try {
+            $stmt = $db->prepare("UPDATE `membership_fees` SET status = 'Bezahlt', paid_date = ?
+                WHERE id = ? AND status IN ('Offen', 'Überfällig') AND paid_date IS NULL");
+            $today = date('Y-m-d');
+            foreach ($ids as $id) {
+                $stmt->execute([$today, $id]);
+                if ($stmt->rowCount() !== 1) {
+                    throw new \InvalidArgumentException('Mindestens ein Posten ist nicht mehr offen.');
+                }
+            }
+            $db->commit();
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
     /**
      * Get summary metrics of the most recent SEPA debit run.
      *
@@ -22,8 +95,7 @@ class MembershipFeeRepository
      */
     public function getLastRunSummary(): array
     {
-        // Find the latest due_date or created_at in membership_fees
-        $sql = "SELECT created_at, due_date FROM `membership_fees` ORDER BY id DESC LIMIT 1";
+        $sql = "SELECT id, created_at, due_date FROM `sepa_runs` ORDER BY id DESC LIMIT 1";
         $latest = Database::fetchOne($sql);
 
         if (!$latest) {
@@ -38,11 +110,10 @@ class MembershipFeeRepository
         $createdAtDate = substr((string)$latest['created_at'], 0, 10);
         $dueDate = $latest['due_date'];
 
-        // Aggregate all fees created on that latest date or with that due_date
         $aggSql = "SELECT SUM(amount) as total, COUNT(*) as cnt 
                    FROM `membership_fees` 
-                   WHERE due_date = ? OR created_at LIKE ?";
-        $res = Database::fetchOne($aggSql, [$dueDate, $createdAtDate . '%']);
+                   WHERE sepa_run_id = ?";
+        $res = Database::fetchOne($aggSql, [$latest['id']]);
 
         return [
             'date' => $createdAtDate,
@@ -90,15 +161,16 @@ class MembershipFeeRepository
      */
     public function getRunHistory(int $limit = 50): array
     {
-        $sql = "SELECT due_date, 
-                       MIN(created_at) as run_date, 
-                       COUNT(DISTINCT member_id) as member_count, 
-                       COUNT(*) as transaction_count, 
-                       SUM(amount) as total_amount,
-                       status
-                FROM `membership_fees`
-                GROUP BY due_date, status
-                ORDER BY due_date DESC
+        $limit = max(1, $limit);
+        $sql = "SELECT r.id, r.due_date, r.created_at as run_date,
+                       COUNT(DISTINCT mf.member_id) as member_count,
+                       COUNT(mf.id) as transaction_count,
+                       COALESCE(SUM(mf.amount), 0) as total_amount,
+                       CASE WHEN MIN(mf.status) = MAX(mf.status) THEN MIN(mf.status) ELSE 'Gemischt' END as status
+                FROM `sepa_runs` r
+                LEFT JOIN `membership_fees` mf ON mf.sepa_run_id = r.id
+                GROUP BY r.id, r.due_date, r.created_at
+                ORDER BY r.id DESC
                 LIMIT {$limit}";
         return Database::fetchAll($sql);
     }

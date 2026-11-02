@@ -34,6 +34,68 @@ class SepaController extends Controller
         $this->sepaService = new SepaService();
     }
 
+    public function open(Request $request): void
+    {
+        $this->render('sepa/open', ['items' => $this->feeRepo->getOpenItems(), 'runs' => $this->feeRepo->getRuns()]);
+    }
+
+    public function deleteRun(Request $request, string $id): void
+    {
+        if (!is_string($request->post('_csrf_token')) || !$this->validateCsrf($request)) {
+            if (!is_string($request->post('_csrf_token'))) {
+                $this->flash('danger', 'Sicherheitstoken ungültig oder abgelaufen (CSRF).');
+                $this->redirect('/sepa/open');
+            }
+            return;
+        }
+        $runId = preg_match('/^[1-9][0-9]*$/D', $id) ? filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : false;
+        try {
+            if ($runId === false) {
+                throw new \InvalidArgumentException('Ungültiger SEPA-Lauf.');
+            }
+            $this->feeRepo->deleteRun($runId);
+            $this->flash('success', 'Der SEPA-Lauf und seine offenen Buchungen wurden gelöscht.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('danger', $e->getMessage());
+        }
+        $this->redirect('/sepa/open');
+    }
+
+    public function markOpenPaid(Request $request): void
+    {
+        if (!is_string($request->post('_csrf_token')) || !$this->validateCsrf($request)) {
+            if (!is_string($request->post('_csrf_token'))) {
+                $this->flash('danger', 'Sicherheitstoken ungültig oder abgelaufen (CSRF).');
+                $this->redirect('/sepa/open');
+            }
+            return;
+        }
+
+        $selection = $request->post('ids');
+        $ids = [];
+        if (is_array($selection) && array_is_list($selection)) {
+            foreach ($selection as $value) {
+                if ((!is_string($value) && !is_int($value)) || !preg_match('/^[1-9][0-9]*$/D', (string) $value)) {
+                    $ids = [];
+                    break;
+                }
+                $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                if ($id === false) {
+                    $ids = [];
+                    break;
+                }
+                $ids[] = $id;
+            }
+        }
+        try {
+            $this->feeRepo->markOpenItemsPaid($ids);
+            $this->flash('success', 'Die ausgewählten Posten wurden als bezahlt verbucht.');
+        } catch (\InvalidArgumentException $e) {
+            $this->flash('danger', $e->getMessage());
+        }
+        $this->redirect('/sepa/open');
+    }
+
     /**
      * Display SEPA direct debit overview and execution setup.
      *

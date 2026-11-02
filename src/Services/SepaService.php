@@ -437,13 +437,17 @@ class SepaService
         if (!is_dir($storageDir)) {
             mkdir($storageDir, 0755, true);
         }
-        $filename = 'SEPA_DirectDebit_' . str_replace('-', '', $dueDate) . '_' . date('His') . '.xml';
+        $filename = 'SEPA_DirectDebit_' . str_replace('-', '', $dueDate) . '_' . date('His') . '_' . bin2hex(random_bytes(8)) . '.xml';
         $filepath = $storageDir . '/' . $filename;
-        file_put_contents($filepath, $xmlContent);
+        if (file_put_contents($filepath, $xmlContent, LOCK_EX) === false) {
+            throw new RuntimeException('Die SEPA-Datei konnte nicht gespeichert werden.');
+        }
 
-        // Step 5: Record each transaction into `membership_fees`
+        // Step 5: Record the run and its fee items atomically
         Database::beginTransaction();
         try {
+            Database::execute('INSERT INTO `sepa_runs` (`due_date`) VALUES (?)', [$dueDate]);
+            $runId = (int) Database::lastInsertId();
             foreach ($transactions as $tx) {
                 /** @var Member $member */
                 $member = $tx['member'];
@@ -452,18 +456,16 @@ class SepaService
                         ? (float) $fc['custom_amount']
                         : (float) $fc['base_amount'];
 
-                    $this->feeRepo->recordDebit(
-                        (int) $member->id,
-                        (int) $fc['fee_class_id'],
-                        $itemAmt,
-                        $dueDate,
-                        'Offen'
+                    Database::execute(
+                        'INSERT INTO `membership_fees` (`member_id`, `fee_class_id`, `amount`, `due_date`, `paid_date`, `status`, `created_at`, `sepa_run_id`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                        [(int) $member->id, (int) $fc['fee_class_id'], $itemAmt, $dueDate, null, 'Offen', date('Y-m-d H:i:s'), $runId]
                     );
                 }
             }
             Database::commit();
         } catch (\Throwable $e) {
             Database::rollBack();
+            unlink($filepath);
             throw $e;
         }
 

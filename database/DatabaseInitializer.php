@@ -161,10 +161,17 @@ class DatabaseInitializer
               FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS `sepa_runs` (
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              `due_date` DATE NOT NULL
+            );
+
             CREATE TABLE IF NOT EXISTS `membership_fees` (
               `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `member_id` INTEGER NOT NULL,
               `fee_class_id` INTEGER NOT NULL,
+              `sepa_run_id` INTEGER DEFAULT NULL REFERENCES `sepa_runs` (`id`) ON DELETE RESTRICT,
               `amount` DECIMAL(10,2) NOT NULL,
               `due_date` DATE NOT NULL,
               `paid_date` DATE DEFAULT NULL,
@@ -228,6 +235,7 @@ class DatabaseInitializer
             CREATE INDEX IF NOT EXISTS `idx_member_events_event_id` ON `member_events` (`event_id`);
             CREATE INDEX IF NOT EXISTS `idx_membership_fees_member_id` ON `membership_fees` (`member_id`);
             CREATE INDEX IF NOT EXISTS `idx_membership_fees_fee_class_id` ON `membership_fees` (`fee_class_id`);
+            CREATE INDEX IF NOT EXISTS `idx_membership_fees_sepa_run_id` ON `membership_fees` (`sepa_run_id`);
             CREATE INDEX IF NOT EXISTS `idx_member_fee_classes_fee_class_id` ON `member_fee_classes` (`fee_class_id`);
             CREATE INDEX IF NOT EXISTS `idx_audit_entity` ON `audit_logs` (`entity_type`, `entity_id`);
             CREATE INDEX IF NOT EXISTS `idx_audit_user` ON `audit_logs` (`user_id`);

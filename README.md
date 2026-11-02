@@ -78,6 +78,10 @@ Webbasierte Vereinsverwaltungssoftware **"Clubmanager"** für den **Musikverein 
   - Enthält `GrpHdr`, `PmtInf` (CORE/RCUR) und individuelle `DrctDbtTxInf` mit Gläubiger-ID und Mandatsreferenz.
 - **Ausführungsprotokollierung:**
   - Verbuchung jeder Transaktion in `membership_fees` mit Status `Offen`.
+  - Jeder erfolgreiche Lauf erhält einen eigenen Datensatz in `sepa_runs`: `id` (automatischer Primärschlüssel), `created_at` (Erstellungszeitpunkt der Datenbank) und `due_date` (Fälligkeit). Auch Läufe mit gleichem Datum sind getrennt.
+  - Jede zugehörige Beitragsklassenbuchung verweist über `membership_fees.sepa_run_id` auf diesen Lauf (nullable, indizierter Fremdschlüssel, Löschen referenzierter Läufe gesperrt). Lauf und Buchungen werden gemeinsam transaktional gespeichert; Altbuchungen bleiben `NULL` und werden nicht nachträglich zugeordnet.
+  - Für bestehende Datenbanken nach einer Sicherung einmal `database/migrate_sepa_runs.sql` (MariaDB/MySQL) bzw. `database/migrate_sepa_runs_sqlite.sql` (SQLite) ausführen. Die Migrationen sind nicht wiederholbar; SQLite-Fremdschlüssel müssen pro Verbindung aktiviert sein. Die Initialisierung aktualisiert bestehende Tabellen nicht.
+  - XML-Datei und optionale Altersrekategorisierung entstehen weiterhin vor der Datenbanktransaktion und werden bei einem Buchungsfehler nicht zurückgerollt. Die bisherige datumsbasierte Historie bleibt unverändert.
   - Protokollierung im Audit-Trail und im Serilog-Event-Log.
   - Direkter Download der generierten `.xml`-Datei.
 
