@@ -40,9 +40,14 @@ class FeeClassController extends Controller
      */
     public function index(Request $request): void
     {
-        $feeClasses = $this->repo->getAll();
+        $sort = $request->query('sort', 'name');
+        $sort = in_array($sort, ['name', 'base_amount', 'billing_cycle', 'age_span', 'members_count', 'status'], true) ? $sort : 'name';
+        $direction = $request->query('direction', 'asc') === 'desc' ? 'desc' : 'asc';
+        $feeClasses = $this->repo->getAll($sort, $direction);
         $this->render('fee_classes/index', [
             'feeClasses' => $feeClasses,
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 

@@ -121,6 +121,11 @@ Webbasierte Vereinsverwaltungssoftware **"Clubmanager"** für den **Musikverein 
 - Über **Funktionen** lassen sich Funktionen anlegen und bearbeiten; zugeordnete Funktionen können erst nach Entfernen ihrer Zuordnungen gelöscht werden. Im Tab **Funktionen** eines Mitglieds können Zuordnungen mit Startdatum, optionalem Enddatum und Beschreibung hinzugefügt oder entfernt werden.
 - Die Liste aktueller Mitglieder umfasst Zuordnungen ab einschließlich Startdatum bis einschließlich Enddatum; ohne Enddatum sind sie unbefristet. Die Historie enthält alle bereits begonnenen Zuordnungen, auch beendete, aber keine zukünftigen. Entfernte Zuordnungen erscheinen nicht mehr in der Historie.
 
+### 2.12 Ereignisse (Datenbankschema)
+- `events`: `id` (automatisch erzeugter Primärschlüssel), `name` (`VARCHAR(100)`, Pflichtfeld).
+- `member_events`: `id`, `member_id` und `event_id` (Pflichtfelder und indizierte Fremdschlüssel), `event_date` (`DATE`, Pflichtfeld) und `description` (`TEXT`, optional). Wiederholte Zuordnungen desselben Ereignisses zum selben Mitglied sind auch am selben Datum erlaubt. Beim Löschen eines Mitglieds oder Ereignisses werden die Zuordnungen gelöscht.
+- Für bestehende Datenbanken nach einer Sicherung `database/migrate_events.sql` für MariaDB/MySQL bzw. `database/migrate_events_sqlite.sql` für SQLite auf der richtigen Datenbank ausführen. Die Migrationen erstellen fehlende Tabellen, ändern aber keine bereits vorhandenen Tabellen gleichen Namens. SQLite-Fremdschlüssel müssen pro Verbindung mit `PRAGMA foreign_keys = ON` aktiviert sein; SQLite erzwingt weder die Länge von `VARCHAR(100)` noch ein gültiges Datumsformat.
+
 ---
 
 ## 3. Verzeichnisstruktur

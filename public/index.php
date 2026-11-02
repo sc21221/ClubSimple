@@ -143,6 +143,8 @@ $router->post('/members/{id}/departments', [\Clubmanager\Controllers\DepartmentC
 $router->post('/members/{id}/departments/{assignmentId}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'remove'], ['auth']);
 $router->post('/members/{id}/functions', [\Clubmanager\Controllers\FunctionController::class, 'assign'], ['auth']);
 $router->post('/members/{id}/functions/{assignmentId}/delete', [\Clubmanager\Controllers\FunctionController::class, 'remove'], ['auth']);
+$router->post('/members/{id}/events', [\Clubmanager\Controllers\EventController::class, 'assign'], ['auth']);
+$router->post('/members/{id}/events/{assignmentId}/delete', [\Clubmanager\Controllers\EventController::class, 'remove'], ['auth']);
 $router->get('/members/{id}/export/json', [\Clubmanager\Controllers\MemberController::class, 'exportGdprJson'], ['auth']);
 $router->get('/members/{id}/export/pdf', [\Clubmanager\Controllers\MemberController::class, 'exportGdprPdf'], ['auth']);
 $router->post('/members/{id}/anonymize', [\Clubmanager\Controllers\MemberController::class, 'anonymize'], ['auth']);
@@ -165,6 +167,15 @@ $router->post('/functions/{id}/update', [\Clubmanager\Controllers\FunctionContro
 $router->post('/functions/{id}/delete', [\Clubmanager\Controllers\FunctionController::class, 'delete'], ['auth']);
 $router->get('/functions/{id}/members', [\Clubmanager\Controllers\FunctionController::class, 'members'], ['auth']);
 $router->get('/functions/{id}/history', [\Clubmanager\Controllers\FunctionController::class, 'history'], ['auth']);
+
+// Events
+$router->get('/events', [\Clubmanager\Controllers\EventController::class, 'index'], ['auth']);
+$router->get('/events/create', [\Clubmanager\Controllers\EventController::class, 'create'], ['auth']);
+$router->post('/events', [\Clubmanager\Controllers\EventController::class, 'store'], ['auth']);
+$router->get('/events/{id}/edit', [\Clubmanager\Controllers\EventController::class, 'edit'], ['auth']);
+$router->post('/events/{id}/update', [\Clubmanager\Controllers\EventController::class, 'update'], ['auth']);
+$router->post('/events/{id}/delete', [\Clubmanager\Controllers\EventController::class, 'delete'], ['auth']);
+$router->get('/events/{id}/members', [\Clubmanager\Controllers\EventController::class, 'members'], ['auth']);
 
 // Fee Classes
 $router->get('/fee-classes', [\Clubmanager\Controllers\FeeClassController::class, 'index'], ['auth']);

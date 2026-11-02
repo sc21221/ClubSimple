@@ -3,5 +3,6 @@
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/src/Repositories/FeeClassRepository.php" value="31c69bc1-ca5e-412a-bb7a-173dea1a72a0" />
     <file url="file://$PROJECT_DIR$/src/Repositories/MemberRepository.php" value="31c69bc1-ca5e-412a-bb7a-173dea1a72a0" />
+    <file url="file://$PROJECT_DIR$/storage/member_event.sql" value="31c69bc1-ca5e-412a-bb7a-173dea1a72a0" />
   </component>
 </project>

@@ -19,7 +19,9 @@ class DepartmentController extends Controller
 
     public function index(Request $request): void
     {
-        $this->render('departments/index', ['departments' => $this->repo->getAll()]);
+        $sort = 'name';
+        $direction = $request->query('direction', 'asc') === 'desc' ? 'desc' : 'asc';
+        $this->render('departments/index', ['departments' => $this->repo->getAll($sort, $direction), 'sort' => $sort, 'direction' => $direction]);
     }
 
     public function create(Request $request): void

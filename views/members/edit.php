@@ -23,6 +23,7 @@
     <li class="nav-item" role="presentation"><button class="nav-link" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees" type="button" role="tab" aria-controls="fees" aria-selected="false"><?= __('assigned_fees') ?></button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" id="departments-tab" data-bs-toggle="tab" data-bs-target="#departments" type="button" role="tab" aria-controls="departments" aria-selected="false"><?= __('nav_departments') ?></button></li>
     <li class="nav-item" role="presentation"><button class="nav-link" id="functions-tab" data-bs-toggle="tab" data-bs-target="#functions" type="button" role="tab" aria-controls="functions" aria-selected="false"><?= __('nav_functions') ?></button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="false"><?= __('nav_events') ?></button></li>
 </ul>
 
 <div class="tab-content">
@@ -355,6 +356,65 @@
         </div>
     </div>
 </div>
+
+<div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab" tabindex="0">
+    <div class="card shadow-sm border-0">
+        <div class="card-header card-header-custom py-3">
+            <span class="fw-bold"><i class="bi bi-calendar-event text-primary me-2"></i> <?= __('event_assignments') ?></span>
+        </div>
+        <div class="card-body">
+            <?php if (empty($assignedEvents)): ?>
+                <p class="text-muted"><?= __('event_no_assignments') ?></p>
+            <?php else: ?>
+                <div class="table-responsive mb-4">
+                    <table class="table align-middle">
+                        <thead><tr><th><?= __('event_name') ?></th><th><?= __('event_date') ?></th><th><?= __('event_description') ?></th><th class="text-end"><?= __('actions') ?></th></tr></thead>
+                        <tbody>
+                        <?php foreach ($assignedEvents as $assignment): ?>
+                            <tr>
+                                <td><?= e($assignment->name) ?></td>
+                                <td><?= e($assignment->event_date) ?></td>
+                                <td><?= e($assignment->description ?? '') ?></td>
+                                <td class="text-end">
+                                    <form action="/members/<?= (int) $member->id ?>/events/<?= (int) $assignment->id ?>/delete" method="POST" onsubmit="return confirm(<?= e(json_encode(__('event_confirm_remove'), JSON_HEX_APOS | JSON_HEX_QUOT)) ?>);">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"><?= __('delete') ?></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+            <?php if (!empty($events)): ?>
+                <form action="/members/<?= (int) $member->id ?>/events" method="POST" class="row g-3 align-items-end">
+                    <?= csrf_field() ?>
+                    <div class="col-md-4">
+                        <label for="event_id" class="form-label small fw-semibold"><?= __('nav_events') ?> *</label>
+                        <select class="form-select" id="event_id" name="event_id" required>
+                            <option value=""><?= __('event_select') ?></option>
+                            <?php foreach ($events as $availableEvent): ?>
+                                <option value="<?= (int) $availableEvent->id ?>"><?= e($availableEvent->name) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="event_date" class="form-label small fw-semibold"><?= __('event_date') ?> *</label>
+                        <input type="date" class="form-control" id="event_date" name="event_date" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="event_description" class="form-label small fw-semibold"><?= __('event_description') ?></label>
+                        <input type="text" class="form-control" id="event_description" name="description">
+                    </div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-primary"><?= __('event_assign') ?></button></div>
+                </form>
+            <?php else: ?>
+                <p class="text-muted mb-0"><?= __('events_none') ?></p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 </div>
 
 <script>
@@ -362,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const actions = document.getElementById('member-edit-actions');
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', () => {
-            actions.hidden = tab.id === 'fees-tab' || tab.id === 'departments-tab' || tab.id === 'functions-tab';
+            actions.hidden = tab.id === 'fees-tab' || tab.id === 'departments-tab' || tab.id === 'functions-tab' || tab.id === 'events-tab';
         });
     });
     document.getElementById('member-edit-form').addEventListener('invalid', event => {

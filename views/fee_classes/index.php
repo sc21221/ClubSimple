@@ -1,3 +1,13 @@
+<?php
+$sort = $sort ?? 'name';
+$direction = $direction ?? 'asc';
+$sortLink = static function (string $column) use ($sort, $direction): string {
+    return '/fee-classes?' . http_build_query([
+        'sort' => $column,
+        'direction' => $sort === $column && $direction === 'asc' ? 'desc' : 'asc',
+    ]);
+};
+?>
 <!-- Fee Classes Header -->
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
     <div>
@@ -17,12 +27,11 @@
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
-                    <th><?= __('field_fee_name') ?></th>
-                    <th><?= __('field_fee_base_amount') ?></th>
-                    <th><?= __('field_fee_cycle') ?></th>
-                    <th><?= __('field_fee_age_span') ?></th>
-                    <th><?= __('assigned_members_count') ?></th>
-                    <th><?= __('status') ?></th>
+                    <?php foreach (['name' => __('field_fee_name'), 'base_amount' => __('field_fee_base_amount'), 'billing_cycle' => __('field_fee_cycle'), 'age_span' => __('field_fee_age_span'), 'members_count' => __('assigned_members_count'), 'status' => __('status')] as $column => $label): ?>
+                        <th scope="col"<?= $sort === $column ? ' aria-sort="' . ($direction === 'asc' ? 'ascending' : 'descending') . '"' : '' ?>>
+                            <a class="text-reset text-decoration-none" href="<?= e($sortLink($column)) ?>"><?= e($label) ?> <i class="bi <?= $sort === $column ? ($direction === 'asc' ? 'bi-sort-up' : 'bi-sort-down') : 'bi-arrow-down-up' ?>" aria-hidden="true"></i></a>
+                        </th>
+                    <?php endforeach; ?>
                     <th class="text-end"><?= __('actions') ?></th>
                 </tr>
             </thead>

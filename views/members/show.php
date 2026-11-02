@@ -1,4 +1,9 @@
 <?php
+    use Clubmanager\Models\FeeClass;
+    use Clubmanager\Models\Member;
+
+    /** @var Member $member */
+    /** @var FeeClass[] $allFeeClasses */
     $statusClass = match($member->status) {
         'Aktiv' => 'badge-status-aktiv',
         'Inaktiv' => 'badge-status-inaktiv',
@@ -131,6 +136,29 @@
 
     <!-- Right Column: Assigned Fee Classes & Fee History -->
     <div class="col-lg-6">
+        <?php foreach ([
+            [__('nav_departments'), $assignedDepartments ?? [], 'department_no_assignments', ['department_assigned_date' => 'assigned_date'], 'department_description'],
+            [__('nav_functions'), $assignedFunctions ?? [], 'function_no_assignments', ['valid_from' => 'start_date', 'valid_until' => 'end_date'], 'function_description'],
+            [__('nav_events'), $assignedEvents ?? [], 'event_no_assignments', ['event_date' => 'event_date'], 'event_description'],
+        ] as [$heading, $assignments, $emptyKey, $dateFields, $descriptionKey]): ?>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header card-header-custom py-3"><span class="fw-bold"><?= e($heading) ?></span></div>
+            <div class="card-body p-0">
+                <?php if (empty($assignments)): ?>
+                    <div class="p-3 text-muted small"><?= e(__($emptyKey)) ?></div>
+                <?php else: ?>
+                    <div class="table-responsive"><table class="table align-middle mb-0">
+                        <thead class="table-light"><tr><th><?= e(__('department_name')) ?></th><?php foreach ($dateFields as $label => $field): ?><th><?= e(__($label)) ?></th><?php endforeach; ?><th><?= e(__($descriptionKey)) ?></th></tr></thead>
+                        <tbody><?php foreach ($assignments as $assignment): ?><tr>
+                            <td><?= e($assignment->name) ?></td>
+                            <?php foreach ($dateFields as $field): ?><td><?= !empty($assignment->$field) ? e(format_date($assignment->$field)) : '–' ?></td><?php endforeach; ?>
+                            <td><?= e($assignment->description ?? '') ?></td>
+                        </tr><?php endforeach; ?></tbody>
+                    </table></div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
         <!-- Assigned Fee Classes -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header card-header-custom py-3 d-flex justify-content-between align-items-center">

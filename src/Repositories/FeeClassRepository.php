@@ -22,9 +22,20 @@ class FeeClassRepository
      *
      * @return array<int, FeeClass>
      */
-    public function getAll(): array
+    public function getAll(string $sort = 'name', string $direction = 'asc'): array
     {
-        return FeeClass::all('name ASC');
+        $columns = [
+            'name' => 'name',
+            'base_amount' => 'base_amount',
+            'billing_cycle' => 'billing_cycle',
+            'age_span' => 'min_age',
+            'members_count' => "(SELECT COUNT(DISTINCT mfc.member_id) FROM member_fee_classes mfc JOIN members m ON m.id = mfc.member_id WHERE mfc.fee_class_id = fee_classes.id AND mfc.is_active = 1 AND m.status = 'Aktiv')",
+            'status' => 'is_active',
+        ];
+        $column = $columns[$sort] ?? $columns['name'];
+        $order = $direction === 'desc' ? 'DESC' : 'ASC';
+        $secondary = $sort === 'age_span' ? ", max_age {$order}" : '';
+        return FeeClass::all("{$column} {$order}{$secondary}, name ASC, id ASC");
     }
 
     /**

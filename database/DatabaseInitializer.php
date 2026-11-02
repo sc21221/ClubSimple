@@ -146,6 +146,21 @@ class DatabaseInitializer
               FOREIGN KEY (`function_id`) REFERENCES `club_functions` (`id`) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS `events` (
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `name` VARCHAR(100) NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS `member_events` (
+              `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+              `member_id` INTEGER NOT NULL,
+              `event_id` INTEGER NOT NULL,
+              `event_date` DATE NOT NULL,
+              `description` TEXT DEFAULT NULL,
+              FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE CASCADE,
+              FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS `membership_fees` (
               `id` INTEGER PRIMARY KEY AUTOINCREMENT,
               `member_id` INTEGER NOT NULL,
@@ -209,6 +224,8 @@ class DatabaseInitializer
             CREATE INDEX IF NOT EXISTS `idx_member_departments_department_id` ON `member_departments` (`department_id`);
             CREATE INDEX IF NOT EXISTS `idx_member_functions_member_id` ON `member_functions` (`member_id`);
             CREATE INDEX IF NOT EXISTS `idx_member_functions_function_id` ON `member_functions` (`function_id`);
+            CREATE INDEX IF NOT EXISTS `idx_member_events_member_id` ON `member_events` (`member_id`);
+            CREATE INDEX IF NOT EXISTS `idx_member_events_event_id` ON `member_events` (`event_id`);
             CREATE INDEX IF NOT EXISTS `idx_membership_fees_member_id` ON `membership_fees` (`member_id`);
             CREATE INDEX IF NOT EXISTS `idx_membership_fees_fee_class_id` ON `membership_fees` (`fee_class_id`);
             CREATE INDEX IF NOT EXISTS `idx_member_fee_classes_fee_class_id` ON `member_fee_classes` (`fee_class_id`);

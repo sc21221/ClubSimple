@@ -9,7 +9,8 @@
 <div class="card shadow-sm border-0">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-            <thead><tr><th><?= __('department_name') ?></th><th class="text-end"><?= __('actions') ?></th></tr></thead>
+            <?php $direction = $direction ?? 'asc'; ?>
+            <thead><tr><th scope="col" aria-sort="<?= $direction === 'asc' ? 'ascending' : 'descending' ?>"><a class="text-reset text-decoration-none" href="<?= e('/departments?' . http_build_query(['sort' => 'name', 'direction' => $direction === 'asc' ? 'desc' : 'asc'])) ?>"><?= e(__('department_name')) ?> <i class="bi <?= $direction === 'asc' ? 'bi-sort-up' : 'bi-sort-down' ?>" aria-hidden="true"></i></a></th><th scope="col" class="text-end"><?= __('actions') ?></th></tr></thead>
             <tbody>
             <?php if (!empty($departments)): ?>
                 <?php foreach ($departments as $department): ?>

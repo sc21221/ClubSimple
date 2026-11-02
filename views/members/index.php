@@ -1,3 +1,24 @@
+<?php
+/** @var array $filters */
+/** @var array $feeClasses */
+/** @var int $totalMembers */
+/** @var int $totalPages */
+/** @var int $currentPage */
+$sort = $sort ?? 'name';
+$direction = $direction ?? 'asc';
+$query = array_filter($filters, static fn($value) => $value !== null && $value !== '');
+$query['sort'] = $sort;
+$query['direction'] = $direction;
+$sortLink = static function (string $column) use ($query, $sort, $direction): string {
+    $params = $query;
+    $params['sort'] = $column;
+    $params['direction'] = $sort === $column && $direction === 'asc' ? 'desc' : 'asc';
+    return '/members?' . http_build_query($params);
+};
+$pageLink = static function (int $page) use ($query): string {
+    return '/members?' . http_build_query(array_merge($query, ['page' => $page]));
+};
+?>
 <!-- Member Management Header -->
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
     <div>
@@ -15,6 +36,8 @@
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3">
         <form method="GET" action="/members" class="row g-2 align-items-center">
+            <input type="hidden" name="sort" value="<?= e($sort) ?>">
+            <input type="hidden" name="direction" value="<?= e($direction) ?>">
             <!-- Search Text -->
             <div class="col-md-5">
                 <div class="input-group">
@@ -66,11 +89,11 @@
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
-                    <th scope="col"><?= __('field_full_name') ?></th>
-                    <th scope="col"><?= __('field_membership_type') ?></th>
-                    <th scope="col"><?= __('field_status') ?></th>
-                    <th scope="col"><?= __('field_age') ?> / <?= __('field_birth_date') ?></th>
-                    <th scope="col"><?= __('field_join_date') ?></th>
+                    <?php foreach (['name' => __('field_full_name'), 'membership_type' => __('field_membership_type'), 'status' => __('field_status'), 'age' => __('field_age') . ' / ' . __('field_birth_date'), 'join_date' => __('field_join_date')] as $column => $label): ?>
+                        <th scope="col"<?= $sort === $column ? ' aria-sort="' . ($direction === 'asc' ? 'ascending' : 'descending') . '"' : '' ?>>
+                            <a class="text-reset text-decoration-none" href="<?= e($sortLink($column)) ?>"><?= e($label) ?> <i class="bi <?= $sort === $column ? ($direction === 'asc' ? 'bi-sort-up' : 'bi-sort-down') : 'bi-arrow-down-up' ?>" aria-hidden="true"></i></a>
+                        </th>
+                    <?php endforeach; ?>
                     <th scope="col"><?= __('assigned_fees') ?></th>
                     <th scope="col" class="text-end"><?= __('actions') ?></th>
                 </tr>
@@ -187,19 +210,19 @@
             </span>
             <ul class="pagination pagination-sm mb-0">
                 <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
-                    <a class="page-link" href="/members?page=<?= $currentPage - 1 ?>&search=<?= urlencode($filters['search'] ?? '') ?>&status=<?= urlencode($filters['status'] ?? '') ?>&fee_class_id=<?= urlencode($filters['fee_class_id'] ?? '') ?>">
+                    <a class="page-link" href="<?= e($pageLink($currentPage - 1)) ?>">
                         &laquo;
                     </a>
                 </li>
                 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
                     <li class="page-item <?= $p === $currentPage ? 'active' : '' ?>">
-                        <a class="page-link" href="/members?page=<?= $p ?>&search=<?= urlencode($filters['search'] ?? '') ?>&status=<?= urlencode($filters['status'] ?? '') ?>&fee_class_id=<?= urlencode($filters['fee_class_id'] ?? '') ?>">
+                        <a class="page-link" href="<?= e($pageLink($p)) ?>">
                             <?= $p ?>
                         </a>
                     </li>
                 <?php endfor; ?>
                 <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
-                    <a class="page-link" href="/members?page=<?= $currentPage + 1 ?>&search=<?= urlencode($filters['search'] ?? '') ?>&status=<?= urlencode($filters['status'] ?? '') ?>&fee_class_id=<?= urlencode($filters['fee_class_id'] ?? '') ?>">
+                    <a class="page-link" href="<?= e($pageLink($currentPage + 1)) ?>">
                         &raquo;
                     </a>
                 </li>

@@ -58,12 +58,16 @@ class MemberController extends Controller
             'fee_class_id' => $request->query('fee_class_id'),
         ];
 
+        $sort = $request->query('sort', 'name');
+        $sort = in_array($sort, ['name', 'membership_type', 'status', 'age', 'join_date'], true) ? $sort : 'name';
+        $direction = $request->query('direction', 'asc') === 'desc' ? 'desc' : 'asc';
+
         $page = max(1, (int) $request->query('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
         $totalMembers = $this->memberRepo->countSearch($filters);
-        $members = $this->memberRepo->search($filters, $limit, $offset);
+        $members = $this->memberRepo->search($filters, $limit, $offset, $sort, $direction);
         $feeClasses = $this->feeClassRepo->getAll();
 
         $totalPages = (int) ceil($totalMembers / $limit);
@@ -71,6 +75,8 @@ class MemberController extends Controller
         $this->render('members/index', [
             'members' => $members,
             'filters' => $filters,
+            'sort' => $sort,
+            'direction' => $direction,
             'feeClasses' => $feeClasses,
             'currentPage' => $page,
             'totalPages' => $totalPages,
@@ -193,6 +199,9 @@ class MemberController extends Controller
             'allFeeClasses' => $allFeeClasses,
             'feeHistory' => $feeHistory,
             'auditLogs' => $auditLogs,
+            'assignedDepartments' => (new \Clubmanager\Repositories\DepartmentRepository())->getForMember((int) $member->id),
+            'assignedFunctions' => (new \Clubmanager\Repositories\FunctionRepository())->getForMember((int) $member->id),
+            'assignedEvents' => (new \Clubmanager\Repositories\EventRepository())->getForMember((int) $member->id),
         ]);
     }
 
@@ -222,6 +231,8 @@ class MemberController extends Controller
             'assignedDepartments' => (new \Clubmanager\Repositories\DepartmentRepository())->getForMember((int) $member->id),
             'functions' => (new \Clubmanager\Repositories\FunctionRepository())->getAll(),
             'assignedFunctions' => (new \Clubmanager\Repositories\FunctionRepository())->getForMember((int) $member->id),
+            'events' => (new \Clubmanager\Repositories\EventRepository())->getAll(),
+            'assignedEvents' => (new \Clubmanager\Repositories\EventRepository())->getForMember((int) $member->id),
         ]);
     }
 

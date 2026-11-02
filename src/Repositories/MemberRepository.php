@@ -27,7 +27,7 @@ class MemberRepository
      * @param int $offset
      * @return array<int, Member>
      */
-    public function search(array $filters = [], int $limit = 50, int $offset = 0): array
+    public function search(array $filters = [], int $limit = 50, int $offset = 0, string $sort = 'name', string $direction = 'asc'): array
     {
         [$whereSql, $params] = $this->buildFilterQuery($filters);
 
@@ -40,7 +40,16 @@ class MemberRepository
             $sql .= " WHERE " . $whereSql;
         }
 
-        $sql .= " ORDER BY m.last_name ASC, m.first_name ASC LIMIT {$limit} OFFSET {$offset}";
+        $columns = ['membership_type' => 'm.membership_type', 'status' => 'm.status', 'age' => 'm.birth_date', 'join_date' => 'm.join_date'];
+        $direction = $direction === 'desc' ? 'DESC' : 'ASC';
+        if (isset($columns[$sort])) {
+            $column = $columns[$sort];
+            $columnDirection = $sort === 'age' ? ($direction === 'ASC' ? 'DESC' : 'ASC') : $direction;
+            $sql .= " ORDER BY ({$column} IS NULL) ASC, {$column} {$columnDirection}, m.last_name ASC, m.first_name ASC, m.id ASC";
+        } else {
+            $sql .= " ORDER BY m.last_name {$direction}, m.first_name {$direction}, m.id ASC";
+        }
+        $sql .= " LIMIT {$limit} OFFSET {$offset}";
 
         $rows = Database::fetchAll($sql, $params);
         $members = [];

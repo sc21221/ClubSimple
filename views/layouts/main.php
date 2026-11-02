@@ -51,21 +51,6 @@ use Clubmanager\Models\User;
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/departments') ? 'active' : '' ?>" href="/departments">
-                            <i class="bi bi-diagram-3 me-1"></i> <?= __('nav_departments') ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/functions') ? 'active' : '' ?>" href="/functions">
-                            <i class="bi bi-person-badge me-1"></i> <?= __('nav_functions') ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/fee-classes') ? 'active' : '' ?>" href="/fee-classes">
-                            <i class="bi bi-tags me-1"></i> <?= __('nav_fee_classes') ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/sepa') ? 'active' : '' ?>" href="/sepa">
                             <i class="bi bi-cash-stack me-1"></i> <?= __('nav_sepa') ?>
                         </a>
@@ -85,6 +70,17 @@ use Clubmanager\Models\User;
                                     <i class="bi bi-award me-2 text-warning"></i> <?= __('nav_anniversaries') ?>
                                 </a>
                             </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= (str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/departments') || str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/functions') || str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/events') || str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/fee-classes')) ? 'active' : '' ?>" href="#" id="managementDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear me-1"></i> <?= __('nav_management') ?>
+                        </a>
+                        <ul class="dropdown-menu shadow-sm" aria-labelledby="managementDropdown">
+                            <li><a class="dropdown-item" href="/departments"><i class="bi bi-diagram-3 me-2"></i> <?= __('nav_departments') ?></a></li>
+                            <li><a class="dropdown-item" href="/functions"><i class="bi bi-person-badge me-2"></i> <?= __('nav_functions') ?></a></li>
+                            <li><a class="dropdown-item" href="/events"><i class="bi bi-calendar-event me-2"></i> <?= __('nav_events') ?></a></li>
+                            <li><a class="dropdown-item" href="/fee-classes"><i class="bi bi-tags me-2"></i> <?= __('nav_fee_classes') ?></a></li>
                         </ul>
                     </li>
 

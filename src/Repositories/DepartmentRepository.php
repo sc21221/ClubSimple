@@ -11,9 +11,12 @@ use PDOException;
 class DepartmentRepository
 {
     /** @return array<int, Department> */
-    public function getAll(): array
+    public function getAll(string $sort = 'name', string $direction = 'asc'): array
     {
-        return Department::all('name ASC');
+        $columns = ['name' => 'name'];
+        $column = $columns[$sort] ?? $columns['name'];
+        $direction = $direction === 'desc' ? 'DESC' : 'ASC';
+        return Department::all("{$column} {$direction}, id ASC");
     }
 
     public function findById(int $id): ?Department
