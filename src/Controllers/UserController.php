@@ -70,8 +70,13 @@ class UserController extends Controller
         $validator = Validator::make($data, [
             'name' => 'required|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'required|min:6',
         ]);
+
+        if (!is_string($data['password'] ?? null) || mb_strlen($data['password']) < 8) {
+            $this->flash('danger', __('user_password_min_length'));
+            $this->redirect('/users/create');
+            return;
+        }
 
         if ($validator->fails() || !in_array($data['role'] ?? null, User::ROLES, true)) {
             $this->flash('danger', $validator->first('name') ?: __('validation_error'));
@@ -139,8 +144,11 @@ class UserController extends Controller
             'email' => 'required|email|max:255',
         ]);
 
-        if (!empty($data['password'])) {
-            $validator = Validator::make($data, ['password' => 'min:6']);
+        $password = $data['password'] ?? '';
+        if (!is_string($password) || ($password !== '' && mb_strlen($password) < 8)) {
+            $this->flash('danger', __('user_password_min_length'));
+            $this->redirect('/users/' . $id . '/edit');
+            return;
         }
 
         if ($validator->fails() || !in_array($data['role'] ?? null, User::ROLES, true)) {

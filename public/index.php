@@ -14,6 +14,28 @@ declare(strict_types=1);
  */
 
 // 1. Load Composer Autoloader
+use Clubmanager\Controllers\AuditLogController;
+use Clubmanager\Controllers\AuthController;
+use Clubmanager\Controllers\ClubController;
+use Clubmanager\Controllers\DashboardController;
+use Clubmanager\Controllers\DepartmentController;
+use Clubmanager\Controllers\EventController;
+use Clubmanager\Controllers\FeeClassController;
+use Clubmanager\Controllers\FunctionController;
+use Clubmanager\Controllers\MemberController;
+use Clubmanager\Controllers\ReportController;
+use Clubmanager\Controllers\SepaController;
+use Clubmanager\Controllers\UserController;
+use Clubmanager\Core\Auth;
+use Clubmanager\Core\Database;
+use Clubmanager\Core\I18n;
+use Clubmanager\Core\Logger;
+use Clubmanager\Core\Request;
+use Clubmanager\Core\Response;
+use Clubmanager\Core\Router;
+use Clubmanager\Core\Session;
+use Clubmanager\Models\User;
+
 $autoloader = dirname(__DIR__) . '/vendor/autoload.php';
 if (!file_exists($autoloader)) {
     die("Autoloader not found. Please run 'composer dump-autoload'.");
@@ -41,7 +63,7 @@ if (file_exists($envFile)) {
 }
 
 // 3. Error Reporting & Debug Mode
-$isDebug = (bool) (getenv('APP_DEBUG') ?: true);
+$isDebug = getenv('APP_DEBUG') === 'true';
 if ($isDebug) {
     ini_set('display_errors', '1');
     ini_set('display_startup_errors', '1');
@@ -53,11 +75,11 @@ if ($isDebug) {
 
 // 4. Initialize Structured Serilog Logger
 $logConfig = require dirname(__DIR__) . '/config/logging.php';
-\Clubmanager\Core\Logger::init($logConfig['path'], $logConfig['level']);
+Logger::init($logConfig['path'], $logConfig['level']);
 
 // Global uncaught exception and error handler
 set_exception_handler(function (\Throwable $e) use ($isDebug) {
-    \Clubmanager\Core\Logger::error("Uncaught exception: " . $e->getMessage(), [
+    Logger::error("Uncaught exception: " . $e->getMessage(), [
         'Exception' => get_class($e),
         'File' => $e->getFile(),
         'Line' => $e->getLine(),
@@ -78,137 +100,133 @@ set_exception_handler(function (\Throwable $e) use ($isDebug) {
 
 // 5. Initialize Database & Connect
 try {
-    \Clubmanager\Core\Database::getConnection();
+    Database::getConnection();
 } catch (\Throwable $e) {
-    \Clubmanager\Core\Logger::error("Database boot failure: " . $e->getMessage());
+    Logger::error("Database boot failure: " . $e->getMessage());
     die("Database connection failed. Check storage/logs/clubmanager.log for details.");
 }
 
 // 6. Start Session and Set Language
-\Clubmanager\Core\Session::start();
+Session::start();
 
 // Handle Remember-Me Cookie
-if (!\Clubmanager\Core\Auth::check() && !empty($_COOKIE['clm_remember'])) {
+if (!Auth::check() && !empty($_COOKIE['clm_remember'])) {
     [$userId, $token] = explode(':', $_COOKIE['clm_remember'], 2) + [null, null];
     if ($userId && $token) {
-        $user = \Clubmanager\Models\User::find($userId);
+        $user = User::find($userId);
         if ($user && $user->remember_token && hash_equals($user->remember_token, $token)) {
-            \Clubmanager\Core\Session::set('user_id', (int) $user->id);
-            \Clubmanager\Core\Session::set('user_name', $user->name);
-            \Clubmanager\Core\Session::set('user_email', $user->email);
-            \Clubmanager\Core\Session::set('user_admin', (bool) $user->admin);
-            \Clubmanager\Core\Session::set('user_locale', $user->locale ?: 'de');
+            Auth::login($user);
         }
     }
 }
 
 // Determine active UI language
-$currentLocale = \Clubmanager\Core\Session::get('user_locale', getenv('APP_DEFAULT_LOCALE') ?: 'de');
-\Clubmanager\Core\I18n::setLocale($currentLocale);
+$currentLocale = Session::get('user_locale', getenv('APP_DEFAULT_LOCALE') ?: 'de');
+I18n::setLocale($currentLocale);
 
 // 7. Initialize Router & Define Routes
-$router = new \Clubmanager\Core\Router();
+$router = new Router();
 
 // Root Redirect
 $router->get('/', function ($request) {
-    if (\Clubmanager\Core\Auth::check()) {
-        \Clubmanager\Core\Response::redirect('/dashboard');
+    if (Auth::check()) {
+        Response::redirect('/dashboard');
     } else {
-        \Clubmanager\Core\Response::redirect('/login');
+        Response::redirect('/login');
     }
 });
 
 // Authentication Routes
-$router->get('/login', [\Clubmanager\Controllers\AuthController::class, 'showLogin'], ['guest']);
-$router->post('/login', [\Clubmanager\Controllers\AuthController::class, 'login']);
-$router->post('/logout', [\Clubmanager\Controllers\AuthController::class, 'logout'], ['auth']);
-$router->post('/auth/lang', [\Clubmanager\Controllers\AuthController::class, 'switchLanguage']);
+$router->get('/login', [AuthController::class, 'showLogin'], ['guest']);
+$router->post('/login', [AuthController::class, 'login']);
+$router->post('/logout', [AuthController::class, 'logout'], ['auth']);
+$router->post('/auth/lang', [AuthController::class, 'switchLanguage']);
 
 // Dashboard
-$router->get('/dashboard', [\Clubmanager\Controllers\DashboardController::class, 'index'], ['auth']);
+$router->get('/dashboard', [DashboardController::class, 'index'], ['auth']);
 
 // Member Management
-$router->get('/members', [\Clubmanager\Controllers\MemberController::class, 'index'], ['auth']);
-$router->get('/members/create', [\Clubmanager\Controllers\MemberController::class, 'create'], ['auth']);
-$router->post('/members', [\Clubmanager\Controllers\MemberController::class, 'store'], ['auth']);
-$router->get('/members/{id}', [\Clubmanager\Controllers\MemberController::class, 'show'], ['auth']);
-$router->get('/members/{id}/edit', [\Clubmanager\Controllers\MemberController::class, 'edit'], ['auth']);
-$router->post('/members/{id}', [\Clubmanager\Controllers\MemberController::class, 'update'], ['auth']);
-$router->post('/members/{id}/archive', [\Clubmanager\Controllers\MemberController::class, 'archive'], ['auth']);
-$router->post('/members/{id}/delete', [\Clubmanager\Controllers\MemberController::class, 'delete'], ['auth']);
-$router->post('/members/{id}/fee', [\Clubmanager\Controllers\MemberController::class, 'assignFeeClass'], ['auth']);
-$router->post('/members/{id}/fee/{assignmentId}/update', [\Clubmanager\Controllers\MemberController::class, 'updateFeeClass'], ['auth']);
-$router->post('/members/{id}/fee/{assignmentId}/delete', [\Clubmanager\Controllers\MemberController::class, 'removeFeeClass'], ['auth']);
-$router->post('/members/{id}/departments', [\Clubmanager\Controllers\DepartmentController::class, 'assign'], ['auth']);
-$router->post('/members/{id}/departments/{assignmentId}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'remove'], ['auth']);
-$router->post('/members/{id}/functions', [\Clubmanager\Controllers\FunctionController::class, 'assign'], ['auth']);
-$router->post('/members/{id}/functions/{assignmentId}/delete', [\Clubmanager\Controllers\FunctionController::class, 'remove'], ['auth']);
-$router->post('/members/{id}/events', [\Clubmanager\Controllers\EventController::class, 'assign'], ['auth']);
-$router->post('/members/{id}/events/{assignmentId}/delete', [\Clubmanager\Controllers\EventController::class, 'remove'], ['auth']);
-$router->get('/members/{id}/export/json', [\Clubmanager\Controllers\MemberController::class, 'exportGdprJson'], ['auth']);
-$router->get('/members/{id}/export/pdf', [\Clubmanager\Controllers\MemberController::class, 'exportGdprPdf'], ['auth']);
-$router->post('/members/{id}/anonymize', [\Clubmanager\Controllers\MemberController::class, 'anonymize'], ['auth']);
+$router->get('/members', [MemberController::class, 'index'], ['auth']);
+$router->get('/members/create', [MemberController::class, 'create'], ['auth']);
+$router->post('/members', [MemberController::class, 'store'], ['auth']);
+$router->get('/members/{id}', [MemberController::class, 'show'], ['auth']);
+$router->get('/members/{id}/edit', [MemberController::class, 'edit'], ['auth']);
+$router->post('/members/{id}', [MemberController::class, 'update'], ['auth']);
+$router->post('/members/{id}/archive', [MemberController::class, 'archive'], ['auth']);
+$router->post('/members/{id}/delete', [MemberController::class, 'delete'], ['auth']);
+$router->post('/members/{id}/fee', [MemberController::class, 'assignFeeClass'], ['auth']);
+$router->post('/members/{id}/fee/{assignmentId}/update', [MemberController::class, 'updateFeeClass'], ['auth']);
+$router->post('/members/{id}/fee/{assignmentId}/delete', [MemberController::class, 'removeFeeClass'], ['auth']);
+$router->post('/members/{id}/departments', [DepartmentController::class, 'assign'], ['auth']);
+$router->post('/members/{id}/departments/{assignmentId}/delete', [DepartmentController::class, 'remove'], ['auth']);
+$router->post('/members/{id}/functions', [FunctionController::class, 'assign'], ['auth']);
+$router->post('/members/{id}/functions/{assignmentId}/delete', [FunctionController::class, 'remove'], ['auth']);
+$router->post('/members/{id}/events', [EventController::class, 'assign'], ['auth']);
+$router->post('/members/{id}/events/{assignmentId}/delete', [EventController::class, 'remove'], ['auth']);
+$router->get('/members/{id}/export/json', [MemberController::class, 'exportGdprJson'], ['auth']);
+$router->get('/members/{id}/export/pdf', [MemberController::class, 'exportGdprPdf'], ['auth']);
+$router->post('/members/{id}/anonymize', [MemberController::class, 'anonymize'], ['auth']);
 
 // Departments
-$router->get('/departments', [\Clubmanager\Controllers\DepartmentController::class, 'index'], ['auth']);
-$router->get('/departments/create', [\Clubmanager\Controllers\DepartmentController::class, 'create'], ['auth']);
-$router->post('/departments', [\Clubmanager\Controllers\DepartmentController::class, 'store'], ['auth']);
-$router->get('/departments/{id}/edit', [\Clubmanager\Controllers\DepartmentController::class, 'edit'], ['auth']);
-$router->post('/departments/{id}/update', [\Clubmanager\Controllers\DepartmentController::class, 'update'], ['auth']);
-$router->post('/departments/{id}/delete', [\Clubmanager\Controllers\DepartmentController::class, 'delete'], ['auth']);
-$router->get('/departments/{id}/members', [\Clubmanager\Controllers\DepartmentController::class, 'show'], ['auth']);
+$router->get('/departments', [DepartmentController::class, 'index'], ['auth']);
+$router->get('/departments/create', [DepartmentController::class, 'create'], ['auth']);
+$router->post('/departments', [DepartmentController::class, 'store'], ['auth']);
+$router->get('/departments/{id}/edit', [DepartmentController::class, 'edit'], ['auth']);
+$router->post('/departments/{id}/update', [DepartmentController::class, 'update'], ['auth']);
+$router->post('/departments/{id}/delete', [DepartmentController::class, 'delete'], ['auth']);
+$router->get('/departments/{id}/members', [DepartmentController::class, 'show'], ['auth']);
 
 // Functions
-$router->get('/functions', [\Clubmanager\Controllers\FunctionController::class, 'index'], ['auth']);
-$router->get('/functions/create', [\Clubmanager\Controllers\FunctionController::class, 'create'], ['auth']);
-$router->post('/functions', [\Clubmanager\Controllers\FunctionController::class, 'store'], ['auth']);
-$router->get('/functions/{id}/edit', [\Clubmanager\Controllers\FunctionController::class, 'edit'], ['auth']);
-$router->post('/functions/{id}/update', [\Clubmanager\Controllers\FunctionController::class, 'update'], ['auth']);
-$router->post('/functions/{id}/delete', [\Clubmanager\Controllers\FunctionController::class, 'delete'], ['auth']);
-$router->get('/functions/{id}/members', [\Clubmanager\Controllers\FunctionController::class, 'members'], ['auth']);
-$router->get('/functions/{id}/history', [\Clubmanager\Controllers\FunctionController::class, 'history'], ['auth']);
+$router->get('/functions', [FunctionController::class, 'index'], ['auth']);
+$router->get('/functions/create', [FunctionController::class, 'create'], ['auth']);
+$router->post('/functions', [FunctionController::class, 'store'], ['auth']);
+$router->get('/functions/{id}/edit', [FunctionController::class, 'edit'], ['auth']);
+$router->post('/functions/{id}/update', [FunctionController::class, 'update'], ['auth']);
+$router->post('/functions/{id}/delete', [FunctionController::class, 'delete'], ['auth']);
+$router->get('/functions/{id}/members', [FunctionController::class, 'members'], ['auth']);
+$router->get('/functions/{id}/history', [FunctionController::class, 'history'], ['auth']);
 
 // Events
-$router->get('/events', [\Clubmanager\Controllers\EventController::class, 'index'], ['auth']);
-$router->get('/events/create', [\Clubmanager\Controllers\EventController::class, 'create'], ['auth']);
-$router->post('/events', [\Clubmanager\Controllers\EventController::class, 'store'], ['auth']);
-$router->get('/events/{id}/edit', [\Clubmanager\Controllers\EventController::class, 'edit'], ['auth']);
-$router->post('/events/{id}/update', [\Clubmanager\Controllers\EventController::class, 'update'], ['auth']);
-$router->post('/events/{id}/delete', [\Clubmanager\Controllers\EventController::class, 'delete'], ['auth']);
-$router->get('/events/{id}/members', [\Clubmanager\Controllers\EventController::class, 'members'], ['auth']);
+$router->get('/events', [EventController::class, 'index'], ['auth']);
+$router->get('/events/create', [EventController::class, 'create'], ['auth']);
+$router->post('/events', [EventController::class, 'store'], ['auth']);
+$router->get('/events/{id}/edit', [EventController::class, 'edit'], ['auth']);
+$router->post('/events/{id}/update', [EventController::class, 'update'], ['auth']);
+$router->post('/events/{id}/delete', [EventController::class, 'delete'], ['auth']);
+$router->get('/events/{id}/members', [EventController::class, 'members'], ['auth']);
 
 // Fee Classes
-$router->get('/fee-classes', [\Clubmanager\Controllers\FeeClassController::class, 'index'], ['auth']);
-$router->get('/fee-classes/create', [\Clubmanager\Controllers\FeeClassController::class, 'create'], ['auth']);
-$router->post('/fee-classes', [\Clubmanager\Controllers\FeeClassController::class, 'store'], ['auth']);
-$router->get('/fee-classes/{id}/edit', [\Clubmanager\Controllers\FeeClassController::class, 'edit'], ['auth']);
-$router->post('/fee-classes/{id}', [\Clubmanager\Controllers\FeeClassController::class, 'update'], ['auth']);
-$router->post('/fee-classes/{id}/delete', [\Clubmanager\Controllers\FeeClassController::class, 'delete'], ['auth']);
+$router->get('/fee-classes', [FeeClassController::class, 'index'], ['auth']);
+$router->get('/fee-classes/create', [FeeClassController::class, 'create'], ['auth']);
+$router->post('/fee-classes', [FeeClassController::class, 'store'], ['auth']);
+$router->get('/fee-classes/{id}/edit', [FeeClassController::class, 'edit'], ['auth']);
+$router->post('/fee-classes/{id}', [FeeClassController::class, 'update'], ['auth']);
+$router->post('/fee-classes/{id}/delete', [FeeClassController::class, 'delete'], ['auth']);
 
 // SEPA Direct Debit Processing
-$router->get('/sepa', [\Clubmanager\Controllers\SepaController::class, 'index'], ['auth']);
-$router->get('/sepa/preview', [\Clubmanager\Controllers\SepaController::class, 'preview'], ['auth']);
-$router->post('/sepa/execute', [\Clubmanager\Controllers\SepaController::class, 'execute'], ['auth']);
-$router->get('/sepa/download', [\Clubmanager\Controllers\SepaController::class, 'download'], ['auth']);
-$router->get('/sepa/history', [\Clubmanager\Controllers\SepaController::class, 'history'], ['auth']);
+$router->get('/sepa', [SepaController::class, 'index'], ['auth']);
+$router->get('/sepa/preview', [SepaController::class, 'preview'], ['auth']);
+$router->post('/sepa/execute', [SepaController::class, 'execute'], ['auth']);
+$router->get('/sepa/download', [SepaController::class, 'download'], ['auth']);
+$router->get('/sepa/history', [SepaController::class, 'history'], ['auth']);
 
 // Reports & Anniversary Lists
-$router->get('/reports/birthdays', [\Clubmanager\Controllers\ReportController::class, 'birthdays'], ['auth']);
-$router->get('/reports/anniversaries', [\Clubmanager\Controllers\ReportController::class, 'anniversaries'], ['auth']);
+$router->get('/reports/birthdays', [ReportController::class, 'birthdays'], ['auth']);
+$router->get('/reports/anniversaries', [ReportController::class, 'anniversaries'], ['auth']);
 
 // Administrator Routes (RBAC: Requires users.admin = 1)
-$router->get('/users', [\Clubmanager\Controllers\UserController::class, 'index'], ['admin']);
-$router->get('/users/create', [\Clubmanager\Controllers\UserController::class, 'create'], ['admin']);
-$router->post('/users', [\Clubmanager\Controllers\UserController::class, 'store'], ['admin']);
-$router->get('/users/{id}/edit', [\Clubmanager\Controllers\UserController::class, 'edit'], ['admin']);
-$router->post('/users/{id}', [\Clubmanager\Controllers\UserController::class, 'update'], ['admin']);
-$router->post('/users/{id}/delete', [\Clubmanager\Controllers\UserController::class, 'delete'], ['admin']);
+$router->get('/users', [UserController::class, 'index'], ['admin']);
+$router->get('/users/create', [UserController::class, 'create'], ['admin']);
+$router->post('/users', [UserController::class, 'store'], ['admin']);
+$router->get('/users/{id}/edit', [UserController::class, 'edit'], ['admin']);
+$router->post('/users/{id}', [UserController::class, 'update'], ['admin']);
+$router->post('/users/{id}/delete', [UserController::class, 'delete'], ['admin']);
 
-$router->get('/club', [\Clubmanager\Controllers\ClubController::class, 'edit'], ['admin']);
-$router->post('/club', [\Clubmanager\Controllers\ClubController::class, 'update'], ['admin']);
+$router->get('/club', [ClubController::class, 'edit'], ['admin']);
+$router->post('/club', [ClubController::class, 'update'], ['admin']);
 
-$router->get('/audit', [\Clubmanager\Controllers\AuditLogController::class, 'index'], ['admin']);
+$router->get('/audit', [AuditLogController::class, 'index'], ['admin']);
 
 // 8. Dispatch Request
-$request = new \Clubmanager\Core\Request();
+$request = new Request();
 $router->dispatch($request);

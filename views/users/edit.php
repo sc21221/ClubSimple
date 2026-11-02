@@ -27,8 +27,9 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label for="password" class="form-label small fw-semibold"><?= __('field_user_password') ?></label>
-                    <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="••••••••">
+                    <input type="password" class="form-control" id="password" name="password" minlength="8" placeholder="••••••••">
                     <div class="form-text small"><?= __('field_user_password_help') ?></div>
+                    <div class="form-text small"><?= e(__('user_password_min_length')) ?></div>
                 </div>
                 <div class="col-md-6">
                     <label for="phone" class="form-label small fw-semibold"><?= __('field_user_phone') ?></label>

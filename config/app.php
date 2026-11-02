@@ -17,7 +17,7 @@ return [
     'version' => '1.7',
     'date' => '16. Oktober 2025',
     'env' => getenv('APP_ENV') ?: 'production',
-    'debug' => (bool) (getenv('APP_DEBUG') ?: false),
+    'debug' => getenv('APP_DEBUG') === 'true',
     'url' => getenv('APP_URL') ?: 'http://localhost:8000',
     'default_locale' => getenv('APP_DEFAULT_LOCALE') ?: 'de',
     'locales' => [

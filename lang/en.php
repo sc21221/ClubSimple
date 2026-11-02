@@ -293,6 +293,7 @@ return [
     'field_user_email' => 'Email',
     'field_user_password' => 'Password',
     'field_user_password_help' => 'Leave empty to keep existing password.',
+    'user_password_min_length' => 'The password must be at least 8 characters long.',
     'field_user_role' => 'Role',
     'field_user_is_admin' => 'Grant Administrator Rights',
     'field_user_phone' => 'Phone',

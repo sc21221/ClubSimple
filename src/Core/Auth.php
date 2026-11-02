@@ -52,15 +52,7 @@ class Auth
 
         I18n::setLocale($locale);
 
-        // Store session
-        Session::start();
-        Session::set('user_id', (int) $user->id);
-        Session::set('user_name', $user->name);
-        Session::set('user_email', $user->email);
-        Session::set('user_admin', (bool) $user->admin);
-        Session::set('user_locale', $locale);
-
-        static::$currentUser = $user;
+        static::login($user);
 
         Logger::info("User successfully signed in", [
             'UserId' => $user->id,
@@ -71,6 +63,20 @@ class Auth
         return true;
     }
 
+    public static function login(User $user): void
+    {
+        Session::start();
+        if (!session_regenerate_id(true)) {
+            throw new \RuntimeException('Unable to regenerate session ID');
+        }
+        Session::set('user_id', (int) $user->id);
+        Session::set('user_name', $user->name);
+        Session::set('user_email', $user->email);
+        Session::set('user_admin', (bool) $user->admin);
+        Session::set('user_locale', $user->locale ?: 'de');
+        static::$currentUser = $user;
+    }
+
     /**
      * Check if a user is currently logged in.
      *
@@ -78,7 +84,7 @@ class Auth
      */
     public static function check(): bool
     {
-        return Session::has('user_id');
+        return static::user() !== null;
     }
 
     /**
@@ -88,16 +94,18 @@ class Auth
      */
     public static function user(): ?User
     {
-        if (static::$currentUser !== null) {
-            return static::$currentUser;
-        }
-
         $userId = Session::get('user_id');
         if (!$userId) {
+            static::$currentUser = null;
             return null;
         }
 
         static::$currentUser = User::find($userId);
+        if (static::$currentUser === null) {
+            foreach (['user_id', 'user_name', 'user_email', 'user_admin', 'user_locale'] as $key) {
+                Session::remove($key);
+            }
+        }
         return static::$currentUser;
     }
 

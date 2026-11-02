@@ -293,6 +293,7 @@ return [
     'field_user_email' => 'E-Mail',
     'field_user_password' => 'Passwort',
     'field_user_password_help' => 'Nur ausfüllen, um das Passwort zu ändern.',
+    'user_password_min_length' => 'Das Passwort muss mindestens 8 Zeichen lang sein.',
     'field_user_role' => 'Rolle',
     'field_user_is_admin' => 'Administrator-Rechte gewähren',
     'field_user_phone' => 'Telefon',

@@ -238,6 +238,33 @@ php -S localhost:8000 -t public/
    DB_PASSWORD=ihr_passwort
    ```
 
+### Deployment auf Shared Hosting (z. B. manitu)
+
+Die folgenden Schritte beschreiben eine neue Installation mit MariaDB. Bezeichnungen und verfügbare Einstellungen können je nach Hoster und Tarif abweichen.
+
+1. **Hosting vorbereiten:** PHP 8.2 oder neuer mit `pdo`, `pdo_mysql` und `mbstring` auswählen. Eine MariaDB-Datenbank und einen eigenen Datenbankbenutzer mit den benötigten Rechten anlegen. HTTPS einrichten und prüfen, ob Apache-Rewriting über `public/.htaccess` unterstützt wird.
+2. **Dateien bereitstellen:** Das Projekt per SFTP oder SSH hochladen. Der Dokumentenstamm der Domain muss auf das Verzeichnis `public/` zeigen, nicht auf das Projektverzeichnis. Insbesondere `.env`, `database/` und `storage/` dürfen nicht über das Web erreichbar sein. `storage/logs/` und `storage/sepa/` müssen für PHP beschreibbar und vor fremdem Zugriff geschützt sein.
+3. **Abhängigkeiten installieren:** Im Projektverzeichnis `composer install --no-dev --optimize-autoloader` ausführen. Ist Composer auf dem Server nicht verfügbar, den Autoloader lokal mit diesem Befehl erzeugen und das Verzeichnis `vendor/` mit hochladen.
+4. **Konfiguration erstellen:** `.env.example` als `.env` kopieren und die Werte des Hosters einsetzen:
+
+   ```dotenv
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_URL=https://vereinsverwaltung.example.de
+   DB_CONNECTION=mysql
+   DB_HOST=HOST_VOM_HOSTER
+   DB_PORT=3306
+   DB_DATABASE=DATENBANKNAME
+   DB_USERNAME=DATENBANKBENUTZER
+   DB_PASSWORD=PASSWORT
+   ```
+
+5. **Datenbank einrichten:** Für eine neue leere Datenbank `database/schema.sql` beispielsweise über phpMyAdmin importieren. Der Import erstellt die Tabellen, aber keine Benutzer; der Demo-Seeder wird bei MariaDB nicht automatisch ausgeführt. Bei einer bestehenden Datenbank zunächst eine Sicherung erstellen und nur die noch fehlenden Migrationen ausführen; `CREATE TABLE IF NOT EXISTS` aktualisiert bestehende Tabellen nicht.
+6. **Ersten Administrator einrichten:** Eine vorhandene, bereinigte Datenbank mit Administratorkonto übernehmen oder gezielt einen Benutzer in `users` anlegen: mit Name, gültiger E-Mail, `admin=1`, `role=admin` und einem durch PHP `password_hash(..., PASSWORD_DEFAULT)` erzeugten Passwort-Hash. Niemals ein Klartextpasswort eintragen. Keine Demo-Zugänge mit bekannten Passwörtern in einer öffentlich erreichbaren Installation verwenden.
+7. **Vor der Freigabe prüfen:** Login, Navigation, Mitgliederspeicherung und PDF-Ausgabe testen; bei Fehlern `storage/logs/` prüfen. Sicherstellen, dass `.env` und Dateien unter `storage/` nicht über die Domain abrufbar sind. HTTPS erzwingen, PHP-`display_errors` serverseitig deaktivieren und regelmäßige Datenbank- und Dateisicherungen einrichten. SEPA-Dateien enthalten Bankdaten und benötigen restriktive Dateirechte.
+
+Vor einem öffentlichen Einsatz müssen insbesondere die noch offenen Fragen zu Rollenrechten, Remember-me, Anmeldedrosselung und Datenschutz bewertet werden. Diese Anleitung wurde nicht bei manitu getestet.
+
 ### Schema-Integrität und Bestandsdaten
 
 Neu angelegte Datenbanken erhalten Fremdschlüssel für Mitglieder, Beitragszuordnungen und Buchungen, eine eindeutige Beitragszuordnung pro Mitglied/Klasse/Startdatum sowie zusätzliche Suchindizes. SQLite prüft außerdem die in MySQL als `ENUM` definierten Werte. Referenzierte Mitglieder und Beitragsklassen können nicht gelöscht werden; Beitragszuordnungen und Buchungshistorien bleiben erhalten. Mitglieder mit Historie können stattdessen archiviert oder anonymisiert werden.

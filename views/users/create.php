@@ -26,7 +26,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label for="password" class="form-label small fw-semibold"><?= __('field_user_password') ?> *</label>
-                    <input type="password" class="form-control" id="password" name="password" required minlength="6" placeholder="Mindestens 6 Zeichen">
+                    <input type="password" class="form-control" id="password" name="password" required minlength="8" placeholder="<?= e(__('user_password_min_length')) ?>">
                 </div>
                 <div class="col-md-6">
                     <label for="phone" class="form-label small fw-semibold"><?= __('field_user_phone') ?></label>

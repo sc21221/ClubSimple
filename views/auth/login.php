@@ -58,13 +58,6 @@
                     <i class="bi bi-box-arrow-in-right me-2"></i> <?= __('login_submit') ?>
                 </button>
             </div>
-
-            <!-- Demo hints -->
-            <div class="p-3 bg-light rounded-3 small border">
-                <div class="fw-bold mb-1 text-secondary"><i class="bi bi-info-circle me-1"></i> Demo-Zugangsdaten:</div>
-                <div><strong>Admin:</strong> <code>admin@musikverein-denkendorf.de</code> / <code>admin</code></div>
-                <div><strong>Kassenwart:</strong> <code>kasse@musikverein-denkendorf.de</code> / <code>kasse</code></div>
-            </div>
         </form>
     </div>
 </div>
