@@ -50,10 +50,15 @@ use Clubmanager\Models\User;
                             <i class="bi bi-people me-1"></i> <?= __('nav_members') ?>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/sepa') ? 'active' : '' ?>" href="/sepa">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/sepa') ? 'active' : '' ?>" href="#" id="sepaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-cash-stack me-1"></i> <?= __('nav_sepa') ?>
                         </a>
+                        <ul class="dropdown-menu shadow-sm" aria-labelledby="sepaDropdown">
+                            <li><a class="dropdown-item" href="/sepa"><?= __('nav_sepa_run') ?></a></li>
+                            <li><a class="dropdown-item" href="/sepa/open"><?= __('sepa_open_title') ?></a></li>
+                            <li><a class="dropdown-item" href="/sepa/history"><?= __('nav_sepa_history') ?></a></li>
+                        </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/reports') ? 'active' : '' ?>" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
