@@ -210,6 +210,8 @@ $router->post('/sepa/open/paid', [SepaController::class, 'markOpenPaid'], ['auth
 $router->post('/sepa/runs/{id}/delete', [SepaController::class, 'deleteRun'], ['auth']);
 $router->get('/sepa/preview', [SepaController::class, 'preview'], ['auth']);
 $router->post('/sepa/execute', [SepaController::class, 'execute'], ['auth']);
+$router->get('/sepa/result', [SepaController::class, 'result'], ['auth']);
+$router->get('/sepa/report', [SepaController::class, 'report'], ['auth']);
 $router->get('/sepa/download', [SepaController::class, 'download'], ['auth']);
 $router->get('/sepa/history', [SepaController::class, 'history'], ['auth']);
 

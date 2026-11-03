@@ -499,6 +499,24 @@ class SepaService
             'total_amount' => $preview['total_amount'],
             'total_transactions' => $preview['total_count'],
             'recategorized_count' => $recatCount,
+            'report' => [
+                'club' => (string) $club->name,
+                'due_date' => $dueDate,
+                'remittance' => $remittanceText,
+                'total_amount' => $preview['total_amount'],
+                'transactions' => array_map(static fn(array $tx): array => [
+                    'member_name' => $tx['member']->getFullName(),
+                    'member_id' => (int) $tx['member']->id,
+                    'holder' => $tx['holder'],
+                    'iban' => $tx['iban'],
+                    'bic' => $tx['bic'],
+                    'amount' => $tx['amount'],
+                    'fee_classes' => array_map(static fn(array $fc): array => [
+                        'name' => $fc['fee_class_name'],
+                        'amount' => (float) (($fc['custom_amount'] !== null && $fc['custom_amount'] !== '') ? $fc['custom_amount'] : $fc['base_amount']),
+                    ], $tx['fee_classes']),
+                ], $transactions),
+            ],
         ];
     }
 }

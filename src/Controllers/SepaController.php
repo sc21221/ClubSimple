@@ -8,8 +8,10 @@ use Clubmanager\Core\Controller;
 use Clubmanager\Core\Request;
 use Clubmanager\Core\Response;
 use Clubmanager\Core\Auth;
+use Clubmanager\Core\Session;
 use Clubmanager\Repositories\ClubRepository;
 use Clubmanager\Repositories\MembershipFeeRepository;
+use Clubmanager\Services\SepaReportService;
 use Clubmanager\Services\SepaService;
 
 /**
@@ -96,7 +98,7 @@ class SepaController extends Controller
         $this->redirect('/sepa/open');
     }
 
-    /**
+     /**
      * Display SEPA direct debit overview and execution setup.
      *
      * @param Request $request
@@ -178,12 +180,48 @@ class SepaController extends Controller
                 ($result['recategorized_count'] > 0 ? ' - ' . $result['recategorized_count'] . ' Mitglieder altersbedingt rekategorisiert.' : '')
             );
 
-            // Redirect to result page / trigger download
-            $this->redirect('/sepa/download?file=' . urlencode($result['filename']));
+            $token = bin2hex(random_bytes(16));
+            Session::set('sepa_last_result', ['token' => $token, 'filename' => $result['filename'], 'report' => $result['report']]);
+            $this->redirect('/sepa/result?run=' . $token);
         } catch (\Throwable $e) {
             $this->flash('danger', 'Fehler beim Ausführen des SEPA-Laufs: ' . $e->getMessage());
             $this->redirect('/sepa');
         }
+    }
+
+    public function result(Request $request): void
+    {
+        $result = $this->sessionResult($request);
+        if ($result === null) {
+            $this->flash('danger', 'Der SEPA-Lauf ist in dieser Sitzung nicht mehr verfügbar.');
+            $this->redirect('/sepa');
+            return;
+        }
+        header('Cache-Control: no-store');
+        $this->render('sepa/result', ['result' => $result]);
+    }
+
+    public function report(Request $request): void
+    {
+        $result = $this->sessionResult($request);
+        if ($result === null) {
+            $this->flash('danger', 'Der SEPA-Report ist in dieser Sitzung nicht mehr verfügbar.');
+            $this->redirect('/sepa');
+            return;
+        }
+        $pdf = (new SepaReportService())->generate($result['report']);
+        header('Cache-Control: private, no-store');
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="SEPA_Report.pdf"');
+        header('Content-Length: ' . strlen($pdf));
+        echo $pdf;
+    }
+
+    private function sessionResult(Request $request): ?array
+    {
+        $result = Session::get('sepa_last_result');
+        $token = $request->query('run');
+        return is_array($result) && is_string($token) && hash_equals($result['token'], $token) ? $result : null;
     }
 
     /**
